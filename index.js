@@ -31,20 +31,37 @@ will be configurable (eg triggers).
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
-function build_element_path(has_parent, children) {
+
+const types = {
+	anchor: {fixed: true, children: ["message"]},
+	text: { },
+	builtin: {children: ["message"]},
+	conditional: {children: ["message", "otherwise"]},
+};
+
+const path_cache = { }; //TODO: Clean this out periodically
+function element_path(element) {
+	//Calculate a cache key for the element. This should be affected by anything that affects
+	//the path/clickable area, but not things that merely affect display (colour, text, etc).
+	let cache_key = element.type;
+	for (let childset of element.children || []) {
+		cache_key += "[" + childset.map(c => c ? element_path(c).totheight : 30).join() + "]";
+	}
+	if (path_cache[cache_key]) return path_cache[cache_key];
+	const type = types[element.type];
 	const path = new Path2D;
 	path.moveTo(0, 0);
 	path.lineTo(200, 0);
 	path.lineTo(200, 30);
 	let y = 30;
-	path.connections = [];
-	for (let i = 0; i < children.length; ++i) {
+	const connections = [];
+	if (type.children) for (let i = 0; i < type.children.length; ++i) {
 		if (i) {
-			//For second and subsequent children, add a separator bar and a label.
+			//For second and subsequent children, add a separator bar and room for a label.
 			path.lineTo(200, y);
 			path.lineTo(200, y += 20);
 		}
-		path.connections.push({x: 10, y, name: "unknown"})
+		connections.push({x: 10, y, name: type.children[i]});
 		path.lineTo(10, y);
 		path.lineTo(10, y + 5);
 		path.arc(10, y + 15, 10, Math.PI * 3 / 2, Math.PI / 2, false);
@@ -53,40 +70,32 @@ function build_element_path(has_parent, children) {
 	}
 	path.lineTo(0, y);
 	path.lineTo(0, 30);
-	if (has_parent) { //Object has a connection point on its left edge
+	if (!type.fixed) { //Object has a connection point on its left edge
 		path.lineTo(0, 25);
 		path.arc(0, 15, 10, Math.PI / 2, Math.PI * 3 / 2, true);
 	}
 	path.closePath();
-	return path;
+	console.log("Connections:", connections);
+	return path_cache[cache_key] = {path, connections, tot_height: y};
 }
 
-const objects = {
-	anchor: build_element_path(0, [[]]),
-	text: build_element_path(1, []),
-	builtin: build_element_path(1, [[]]),
-	conditional: build_element_path(1, [[], []]),
-};
-const connections = {
-	anchor: [{x: 10, y: 30, name: "message"}],
-};
-
 const elements = [
-	{type: "anchor", x: 10, y: 10, fixed: true, color: "#ffff00", label: "When !foo is typed..."},
+	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""]},
 	{type: "text", x: 220, y: 30, color: "#77eeee", label: "Hello, world!"},
-	{type: "builtin", x: 250, y: 100, color: "#ee77ee", label: "Get channel uptime"},
-	{type: "conditional", x: 10, y: 150, color: "#7777ee", label: "If..."},
+	{type: "builtin", x: 250, y: 100, color: "#ee77ee", label: "Get channel uptime", message: [""]},
+	{type: "conditional", x: 10, y: 150, color: "#7777ee", label: "If...", message: [""], otherwise: [""]},
 ];
 
 function draw_at(ctx, el) {
+	const path = element_path(el);
 	ctx.save();
 	ctx.translate(el.x|0, el.y|0);
 	ctx.fillStyle = el.color;
-	ctx.fill(objects[el.type]);
+	ctx.fill(path.path);
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
 	ctx.fillText(el.label || "", 20, 20, 175);
-	ctx.stroke(objects[el.type]);
+	ctx.stroke(path.path);
 	ctx.restore();
 }
 
@@ -102,9 +111,10 @@ canvas.addEventListener("pointerdown", e => {
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
 	elements.forEach(el => {
-		if (el.fixed) return;
+		if (types[el.type].fixed) return;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
-		if (ctx.isPointInPath(objects[el.type], x, y)) {
+		const path = element_path(el);
+		if (ctx.isPointInPath(path.path, x, y)) {
 			dragging = el; dragbasex = x; dragbasey = y;
 		}
 	});
@@ -113,7 +123,7 @@ canvas.addEventListener("pointerdown", e => {
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	for (let el of elements) {
-		for (let conn of objects[el.type].connections || []) {
+		for (let conn of el.connections || []) {
 			const snapx = el.x + conn.x, snapy = el.y + conn.y;
 			if (((snapx - xpos) ** 2 + (snapy - ypos) ** 2) <= SNAP_RANGE)
 				return [snapx, snapy]; //First match locks it in. No other snapping done.
