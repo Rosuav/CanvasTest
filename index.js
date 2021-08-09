@@ -49,8 +49,9 @@ function repaint() {
 repaint();
 
 let dragging = null, dragbasex = 50, dragbasey = 10;
-canvas.addEventListener("mousedown", e => {
+canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
+	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
 	elements.forEach(el => {
 		if (el.fixed) return;
@@ -73,10 +74,13 @@ function snap_to_elements(xpos, ypos) {
 	return [xpos, ypos];
 }
 
-canvas.addEventListener("mousemove", e => {
+canvas.addEventListener("pointermove", e => {
 	if (!dragging) return;
 	[dragging.x, dragging.y] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
 	repaint();
 });
 
-canvas.addEventListener("mouseup", e => dragging = null);
+canvas.addEventListener("pointerup", e => {
+	dragging = null;
+	e.target.releasePointerCapture(e.pointerId);
+});
