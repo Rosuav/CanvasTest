@@ -5,7 +5,6 @@
 * Export to JSON
 * Edit attributes on double-click
 * Drag paint to element to set attributes (eg a "voice" paint)
-* Element types define the number of child *groups* but not the number of children.
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
@@ -14,17 +13,7 @@ cannot be represented in JSON (eg exact pixel positions, and unanchored elements
 There will always be a single anchor, whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers).
-
-TODO: Figure out why double clicking sometimes grabs a child.
-
-TODO: Find drag targets that aren't top level
 */
-
-//A type inherently has 0, 1, or 2 (or maybe more) connection sections (children, defined by attribute name).
-//A path has 1 basis location and 1+ connection points for each section
-//An object has an array of children for each section
-//The basis location plus the offset times the child's index equals the connection point location
-//The connection point should be ignored if the corresponding child is not "".
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
