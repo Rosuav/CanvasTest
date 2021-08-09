@@ -13,6 +13,8 @@ cannot be represented in JSON (eg exact pixel positions, and unanchored elements
 There will always be a single anchor, whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers).
+
+FIXME: There's some sort of weird issue when removing something and it collapsing double empties.
 */
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
@@ -177,6 +179,7 @@ function snap_to_elements(xpos, ypos) {
 		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
 		for (let conn of path.connections || []) {
+			if (el[conn.name][conn.index] !== "") continue;
 			const snapx = el.x + conn.x, snapy = el.y + conn.y;
 			if (((snapx - xpos) ** 2 + (snapy - ypos) ** 2) <= SNAP_RANGE)
 				return [snapx, snapy, el, conn]; //First match locks it in. No other snapping done.
