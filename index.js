@@ -37,8 +37,13 @@ function build_element_path(has_parent, children) {
 	path.lineTo(200, 0);
 	path.lineTo(200, 30);
 	let y = 30;
-	path.connections = []
-	for (let child_count of children) {
+	path.connections = [];
+	for (let i = 0; i < children.length; ++i) {
+		if (i) {
+			//For second and subsequent children, add a separator bar and a label.
+			path.lineTo(200, y);
+			path.lineTo(200, y += 20);
+		}
 		path.connections.push({x: 10, y, name: "unknown"})
 		path.lineTo(10, y);
 		path.lineTo(10, y + 5);
