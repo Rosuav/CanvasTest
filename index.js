@@ -90,27 +90,27 @@ const elements = [
 	{type: "conditional", x: 10, y: 150, color: "#7777ee", label: "If...", message: [""], otherwise: [""]},
 ];
 
-function draw_at(ctx, el, x, y) {
+function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
+	if (reposition) {el.x = parent.x + reposition.x; el.y = parent.y + reposition.y;}
 	const path = element_path(el);
 	ctx.save();
-	ctx.translate((x || el.x)|0, (y || el.y)|0);
+	ctx.translate(el.x|0, el.y|0);
 	ctx.fillStyle = el.color;
 	ctx.fill(path.path);
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
 	ctx.fillText(el.label || "", 20, 20, 175);
 	ctx.stroke(path.path);
+	ctx.restore();
 	const children = types[el.type].children || [];
 	let conn = path.connections, cc = 0;
 	for (let i = 0; i < children.length; ++i) {
 		const childset = el[children[i]];
 		for (let c = 0; c < childset.length; ++c) {
-			draw_at(ctx, childset[c], conn[cc].x, conn[cc].y);
-			++cc;
+			draw_at(ctx, childset[c], el, conn[cc++]);
 		}
 	}
-	ctx.restore();
 }
 
 function repaint() {
