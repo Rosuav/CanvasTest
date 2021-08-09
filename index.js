@@ -41,11 +41,12 @@ const types = {
 
 const path_cache = { }; //TODO: Clean this out periodically
 function element_path(element) {
+	if (element === "") return {totheight: 30}; //Simplify height calculation
 	//Calculate a cache key for the element. This should be affected by anything that affects
 	//the path/clickable area, but not things that merely affect display (colour, text, etc).
 	let cache_key = element.type;
 	for (let childset of element.children || []) {
-		cache_key += "[" + childset.map(c => c ? element_path(c).totheight : 30).join() + "]";
+		cache_key += "[" + childset.map(c => element_path(c).totheight).join() + "]";
 	}
 	if (path_cache[cache_key]) return path_cache[cache_key];
 	const type = types[element.type];
@@ -61,12 +62,15 @@ function element_path(element) {
 			path.lineTo(200, y);
 			path.lineTo(200, y += 20);
 		}
-		connections.push({x: 10, y, name: type.children[i]});
-		path.lineTo(10, y);
-		path.lineTo(10, y + 5);
-		path.arc(10, y + 15, 10, Math.PI * 3 / 2, Math.PI / 2, false);
-		path.lineTo(10, y + 40);
-		y += 40;
+		const childset = element[type.children[i]];
+		if (childset) for (let c = 0; c < childset.length; ++c) {
+			if (childset[c] === "") connections.push({x: 10, y, name: type.children[i], index: c});
+			path.lineTo(10, y);
+			path.lineTo(10, y + 5);
+			path.arc(10, y + 15, 10, Math.PI * 3 / 2, Math.PI / 2, false);
+			path.lineTo(10, y += element_path(childset[c]).totheight);
+		}
+		path.lineTo(10, y += 10); //Leave a bit of a gap under the last child slot to indicate room for more
 	}
 	path.lineTo(0, y);
 	path.lineTo(0, 30);
@@ -123,7 +127,8 @@ canvas.addEventListener("pointerdown", e => {
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	for (let el of elements) {
-		for (let conn of el.connections || []) {
+		const path = element_path(el);
+		for (let conn of path.connections || []) {
 			const snapx = el.x + conn.x, snapy = el.y + conn.y;
 			if (((snapx - xpos) ** 2 + (snapy - ypos) ** 2) <= SNAP_RANGE)
 				return [snapx, snapy]; //First match locks it in. No other snapping done.
