@@ -2,15 +2,9 @@
 
 * Template objects. Drag from them to spawn new elements, but they won't leave their places.
   - If you drop back onto a template, despawn the dragged element
-* Extending connection bars. If a parent has children attached, lengthen the bar to allow one more.
-* Parents track their attached children
-* Children move with parent. A draggable parent drags its children (by the ear, probably).
-* Multiple child connection points
 * Export to JSON
 * Edit attributes on double-click
 * Drag paint to element to set attributes (eg a "voice" paint)
-* Element colour (and opacity)
-* Create paths as required, and cache them. Identify required paths by their parent and child counts.
 * Element types define the number of child *groups* but not the number of children.
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
