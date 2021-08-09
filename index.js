@@ -20,6 +20,9 @@ cannot be represented in JSON (eg exact pixel positions, and unanchored elements
 There will always be a single anchor, whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers).
+
+BUG BUG FIXME: It's currently possible to drag something to be its own grandchild.
+Children MUST drag with their parents.
 */
 
 //A type inherently has 0, 1, or 2 (or maybe more) connection sections (children, defined by attribute name).
