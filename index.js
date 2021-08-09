@@ -13,6 +13,8 @@ will be configurable (eg triggers).
 
 FIXME: There's some sort of weird issue when removing something and it collapsing double empties.
 */
+import {on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
+fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
@@ -224,8 +226,8 @@ canvas.addEventListener("dblclick", e => {
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
-			//TODO: Pop up a dialog to change properties
 			console.log("You clicked on:", el);
+			document.getElementById("properties").showModal();
 			return;
 		}
 	}
