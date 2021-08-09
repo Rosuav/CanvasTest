@@ -35,9 +35,21 @@ function repaint() {
 	elements.forEach(el => draw_at(ctx, ...el));
 }
 repaint();
-function move() {
-	if (elements[0][1]++ < 300) requestAnimationFrame(move);
-	repaint();
-}
-requestAnimationFrame(move);
 
+let dragging = -1, dragbasex = 50, dragbasey = 10;
+canvas.addEventListener("mousedown", e => {
+	if (e.button) return; //Only left clicks
+	//TODO: See which, if any, element is under the mouse
+	console.log("Dragging!", e.offsetX, e.offsetY);
+	dragging = 0; //Hack
+});
+
+canvas.addEventListener("mousemove", e => {
+	if (dragging < 0) return;
+	const el = elements[dragging];
+	el[1] = e.offsetX - dragbasex;
+	el[2] = e.offsetY - dragbasey;
+	repaint();
+});
+
+canvas.addEventListener("mouseup", e => dragging = -1);
