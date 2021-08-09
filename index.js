@@ -31,6 +31,8 @@ function draw_at(ctx, path, x, y) {
 
 function repaint() {
 	const ctx = canvas.getContext('2d');
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	elements.forEach(el => draw_at(ctx, ...el));
 }
 repaint();
+const intv = setInterval(() => {if (++elements[0][1] >= 300) clearInterval(intv); repaint()}, 10);
