@@ -6,7 +6,7 @@ function build_anchor() {
 	path.lineTo(200, 0);
 	path.lineTo(200, 30);
 	path.lineTo(50, 30);
-	//path.lineTo(40, 20); //Angled snipped
+	//path.lineTo(40, 20); //Angled snippet
 	//path.lineTo(30, 30);
 	path.arc(40, 30, 10, 0, Math.PI, true); //Curved snippet
 	path.lineTo(0, 30);
