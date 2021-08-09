@@ -45,10 +45,12 @@ function element_path(element) {
 	//Calculate a cache key for the element. This should be affected by anything that affects
 	//the path/clickable area, but not things that merely affect display (colour, text, etc).
 	let cache_key = element.type;
-	for (let childset of element.children || []) {
+	for (let attr of types[element.type].children || []) {
+		const childset = element[attr] || [""];
 		cache_key += "[" + childset.map(c => element_path(c).totheight).join() + "]";
 	}
 	if (path_cache[cache_key]) return path_cache[cache_key];
+	console.log("Generating path for", cache_key);
 	const type = types[element.type];
 	const path = new Path2D;
 	path.moveTo(0, 0);
@@ -80,7 +82,7 @@ function element_path(element) {
 	}
 	path.closePath();
 	console.log("Connections:", connections);
-	return path_cache[cache_key] = {path, connections, tot_height: y};
+	return path_cache[cache_key] = {path, connections, totheight: y};
 }
 
 const elements = [
@@ -131,10 +133,10 @@ function snap_to_elements(xpos, ypos) {
 		for (let conn of path.connections || []) {
 			const snapx = el.x + conn.x, snapy = el.y + conn.y;
 			if (((snapx - xpos) ** 2 + (snapy - ypos) ** 2) <= SNAP_RANGE)
-				return [snapx, snapy]; //First match locks it in. No other snapping done.
+				return [snapx, snapy, el, conn]; //First match locks it in. No other snapping done.
 		}
 	}
-	return [xpos, ypos];
+	return [xpos, ypos, null, null];
 }
 
 canvas.addEventListener("pointermove", e => {
@@ -144,6 +146,16 @@ canvas.addEventListener("pointermove", e => {
 });
 
 canvas.addEventListener("pointerup", e => {
+	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
+	let parent, conn;
+	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
+	console.log("Snap to", parent, conn);
+	if (parent) {
+		const childset = parent[conn.name];
+		childset[conn.index] = dragging;
+		if (conn.index === childset.length - 1) childset.push(""); //Ensure there's always an empty slot at the end
+	}
 	dragging = null;
 	e.target.releasePointerCapture(e.pointerId);
+	repaint();
 });
