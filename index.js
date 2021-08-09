@@ -66,7 +66,7 @@ function element_path(element) {
 		}
 		const childset = element[type.children[i]];
 		if (childset) for (let c = 0; c < childset.length; ++c) {
-			if (childset[c] === "") connections.push({x: 10, y, name: type.children[i], index: c});
+			connections.push({x: 10, y, name: type.children[i], index: c});
 			path.lineTo(10, y);
 			path.lineTo(10, y + 5);
 			path.arc(10, y + 15, 10, Math.PI * 3 / 2, Math.PI / 2, false);
@@ -112,7 +112,6 @@ function repaint() {
 repaint();
 
 function remove_child(childset, idx) {
-	console.log("Remove", idx, "from", childset);
 	while (++idx < childset.length - 1) {
 		const cur = childset[idx - 1] = childset[idx];
 		if (cur === "") continue;
@@ -173,7 +172,6 @@ canvas.addEventListener("pointerup", e => {
 	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
 	let parent, conn;
 	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
-	console.log("Snap to", parent, conn);
 	if (parent) {
 		const childset = parent[conn.name];
 		childset[conn.index] = dragging;
