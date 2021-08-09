@@ -22,6 +22,10 @@ editing (command, trigger, special, etc). Some anchors will offer information th
 will be configurable (eg triggers).
 
 TODO: Figure out why double clicking sometimes grabs a child.
+
+TODO: Remove child connection points while parent is moving
+
+TODO: Find drag targets that aren't top level
 */
 
 //A type inherently has 0, 1, or 2 (or maybe more) connection sections (children, defined by attribute name).
