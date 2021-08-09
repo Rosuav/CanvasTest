@@ -21,8 +21,7 @@ There will always be a single anchor, whose text (and possibly colour) will be d
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers).
 
-BUG BUG FIXME: It's currently possible to drag something to be its own grandchild.
-Children MUST drag with their parents.
+TODO: Figure out why double clicking sometimes grabs a child.
 */
 
 //A type inherently has 0, 1, or 2 (or maybe more) connection sections (children, defined by attribute name).
@@ -95,22 +94,32 @@ const elements = [
 	{type: "conditional", x: 10, y: 150, color: "#7777ee", label: "If...", message: [""], otherwise: [""]},
 ];
 
-function draw_at(ctx, el) {
+function draw_at(ctx, el, x, y) {
+	if (el === "") return;
 	const path = element_path(el);
 	ctx.save();
-	ctx.translate(el.x|0, el.y|0);
+	ctx.translate((x || el.x)|0, (y || el.y)|0);
 	ctx.fillStyle = el.color;
 	ctx.fill(path.path);
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
 	ctx.fillText(el.label || "", 20, 20, 175);
 	ctx.stroke(path.path);
+	const children = types[el.type].children || [];
+	let conn = path.connections, cc = 0;
+	for (let i = 0; i < children.length; ++i) {
+		const childset = el[children[i]];
+		for (let c = 0; c < childset.length; ++c) {
+			draw_at(ctx, childset[c], conn[cc].x, conn[cc].y);
+			++cc;
+		}
+	}
 	ctx.restore();
 }
 
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	elements.forEach(el => draw_at(ctx, el));
+	elements.forEach(el => el.parent || draw_at(ctx, el));
 }
 repaint();
 
