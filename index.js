@@ -111,19 +111,43 @@ function repaint() {
 }
 repaint();
 
+function remove_child(childset, idx) {
+	console.log("Remove", idx, "from", childset);
+	while (++idx < childset.length - 1) {
+		const cur = childset[idx - 1] = childset[idx];
+		if (cur === "") continue;
+		//assert cur.parent is array
+		//assert cur.parent[0][cur.parent[1]] is childset
+		cur.parent[2]--;
+	}
+	childset.pop();
+}
+
 let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
-	elements.forEach(el => {
-		if (types[el.type].fixed) return;
+	for (let el of elements) {
+		if (types[el.type].fixed) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
 			dragging = el; dragbasex = x; dragbasey = y;
+			if (el.parent) {
+				const childset = el.parent[0][el.parent[1]], idx = el.parent[2];
+				childset[idx] = "";
+				//If this makes a double empty, remove one of them.
+				//This may entail moving other elements up a slot, changing their parent pointers.
+				//(OOB array indexing will never return an empty string)
+				//Note that it is possible to have three in a row, in which case we'll remove twice.
+				while (childset[idx - 1] === "" && childset[idx] === "") remove_child(childset, idx);
+				if (childset[idx] === "" && childset[idx + 1] === "") remove_child(childset, idx);
+				el.parent = null;
+			}
+			return; //Drag the first available and no other.
 		}
-	});
+	}
 });
 
 function snap_to_elements(xpos, ypos) {
@@ -153,6 +177,7 @@ canvas.addEventListener("pointerup", e => {
 	if (parent) {
 		const childset = parent[conn.name];
 		childset[conn.index] = dragging;
+		dragging.parent = [parent, conn.name, conn.index];
 		if (conn.index === childset.length - 1) childset.push(""); //Ensure there's always an empty slot at the end
 	}
 	dragging = null;
