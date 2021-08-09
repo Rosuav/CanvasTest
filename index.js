@@ -71,13 +71,24 @@ function element_path(element) {
 	console.log("Connections:", connections);
 	return path_cache[cache_key] = {path, connections, totheight: y};
 }
-
 const elements = [
 	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""]},
 	{type: "text", x: 220, y: 30, color: "#77eeee", label: "Hello, world!"},
 	{type: "builtin", x: 250, y: 100, color: "#ee77ee", label: "Get channel uptime", message: [""]},
-	{type: "conditional", x: 10, y: 150, color: "#7777ee", label: "If...", message: [""], otherwise: [""]},
 ];
+
+let template_x = canvas.width - 205, template_y = 10;
+[
+	{type: "text", color: "#77eeee", label: "Create new text message", newlabel: "Sample text message"},
+	{type: "conditional", color: "#7777ee", label: "Create new conditional", newlabel: "If..."},
+].forEach(t => {
+	const el = {...t, x: template_x, y: template_y, template: true};
+	for (let attr of types[el.type].children || []) el[attr] = [""];
+	elements.push(el);
+	template_y += element_path(el).totheight + 10;
+});
+const trashcan = {type: "anchor", x: template_x, y: template_y, color: "#999999", label: "Trash", message: [""]}
+elements.push(trashcan);
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -129,6 +140,12 @@ canvas.addEventListener("pointerdown", e => {
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
+			if (el.template) {
+				//Clone and spawn.
+				el = {...el, template: false, label: el.newlabel};
+				for (let attr of types[el.type].children || []) el[attr] = [""];
+				elements.push(el);
+			}
 			dragging = el; dragbasex = x; dragbasey = y;
 			if (el.parent) {
 				const childset = el.parent[0][el.parent[1]], idx = el.parent[2];
@@ -157,7 +174,7 @@ function has_parent(child, parent) {
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	for (let el of elements) {
-		if (has_parent(el, dragging)) continue;
+		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
 		for (let conn of path.connections || []) {
 			const snapx = el.x + conn.x, snapy = el.y + conn.y;
@@ -179,6 +196,16 @@ canvas.addEventListener("pointerup", e => {
 	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
 	let parent, conn;
 	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
+	if (dragging.x > template_x - 100) {
+		//Dropping something anywhere over the templates (or rather, so its center of mass is over templates)
+		//will dump it on the trash. It can be retrieved until save, otherwise it's gone forever.
+		for (let c of element_path(trashcan).connections) {
+			if (trashcan.message[c.index] === "") {
+				parent = trashcan; conn = c;
+				break;
+			}
+		}
+	}
 	if (parent) {
 		const childset = parent[conn.name];
 		childset[conn.index] = dragging;
