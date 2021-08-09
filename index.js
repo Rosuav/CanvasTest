@@ -8,7 +8,7 @@
 * Multiple child connection points
 * Export to JSON
 * Edit attributes on double-click
-* Drag paint to element
+* Drag paint to element to set attributes (eg a "voice" paint)
 * Element colour (and opacity)
 * Create paths as required, and cache them. Identify required paths by their parent and child counts.
 * Element types define the number of child *groups* but not the number of children.
