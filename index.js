@@ -1,4 +1,5 @@
 const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext('2d');
 function build_anchor() {
 	const path = new Path2D;
 	path.moveTo(0, 0);
@@ -30,7 +31,6 @@ function draw_at(ctx, path, x, y) {
 }
 
 function repaint() {
-	const ctx = canvas.getContext('2d');
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	elements.forEach(el => draw_at(ctx, ...el));
 }
@@ -39,9 +39,13 @@ repaint();
 let dragging = -1, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("mousedown", e => {
 	if (e.button) return; //Only left clicks
-	//TODO: See which, if any, element is under the mouse
-	console.log("Dragging!", e.offsetX, e.offsetY);
-	dragging = 0; //Hack
+	dragging = -1;
+	elements.forEach((el, i) => {
+		const x = e.offsetX - el[1], y = e.offsetY - el[2];
+		if (ctx.isPointInPath(objects[el[0]], x, y)) {
+			dragging = i; dragbasex = x; dragbasey = y;
+		}
+	});
 });
 
 canvas.addEventListener("mousemove", e => {
