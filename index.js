@@ -1,9 +1,6 @@
 /* TODO
 
-* Template objects. Drag from them to spawn new elements, but they won't leave their places.
-  - If you drop back onto a template, despawn the dragged element
 * Export to JSON
-* Edit attributes on double-click
 * Drag paint to element to set attributes (eg a "voice" paint)
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
@@ -135,6 +132,7 @@ function remove_child(childset, idx) {
 let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
+	e.preventDefault();
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
 	for (let el of elements) {
@@ -218,4 +216,17 @@ canvas.addEventListener("pointerup", e => {
 	dragging = null;
 	e.target.releasePointerCapture(e.pointerId);
 	repaint();
+});
+
+canvas.addEventListener("dblclick", e => {
+	e.stopPropagation();
+	for (let el of elements) {
+		const x = e.offsetX - el.x, y = e.offsetY - el.y;
+		const path = element_path(el);
+		if (ctx.isPointInPath(path.path, x, y)) {
+			//TODO: Pop up a dialog to change properties
+			console.log("You clicked on:", el);
+			return;
+		}
+	}
 });
