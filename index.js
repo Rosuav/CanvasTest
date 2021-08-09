@@ -48,13 +48,15 @@ const connections = {
 };
 
 const elements = [
-	{type: "anchor", x: 10, y: 10, fixed: true},
-	{type: "text", x: 10, y: 100},
+	{type: "anchor", x: 10, y: 10, fixed: true, color: "#ffff00"},
+	{type: "text", x: 10, y: 100, color: "#77eeee"},
 ];
 
 function draw_at(ctx, el) {
 	ctx.save();
 	ctx.translate(el.x|0, el.y|0);
+	ctx.fillStyle = el.color;
+	ctx.fill(objects[el.type]);
 	ctx.stroke(objects[el.type]);
 	ctx.restore();
 }
