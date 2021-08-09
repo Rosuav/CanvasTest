@@ -17,8 +17,6 @@ will be configurable (eg triggers).
 
 TODO: Figure out why double clicking sometimes grabs a child.
 
-TODO: Remove child connection points while parent is moving
-
 TODO: Find drag targets that aren't top level
 */
 
@@ -159,9 +157,18 @@ canvas.addEventListener("pointerdown", e => {
 	}
 });
 
+function has_parent(child, parent) {
+	while (child) {
+		if (child === parent) return true;
+		if (!child.parent) return false;
+		child = child.parent[0];
+	}
+}
+
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	for (let el of elements) {
+		if (has_parent(el, dragging)) continue;
 		const path = element_path(el);
 		for (let conn of path.connections || []) {
 			const snapx = el.x + conn.x, snapy = el.y + conn.y;
