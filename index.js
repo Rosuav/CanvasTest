@@ -13,17 +13,24 @@ function build_anchor() {
 	return path
 }
 
+const objects = {
+	anchor: build_anchor(),
+}
+
+const elements = [
+	["anchor", 10, 10],
+	["anchor", 10, 80],
+];
+
 function draw_at(ctx, path, x, y) {
 	ctx.save();
 	ctx.translate(x, y);
-	ctx.stroke(path);
+	ctx.stroke(objects[path]);
 	ctx.restore();
 }
 
 function repaint() {
 	const ctx = canvas.getContext('2d');
-	const anchor = build_anchor();
-	draw_at(ctx, anchor, 10, 10);
-	draw_at(ctx, anchor, 10, 80);
+	elements.forEach(el => draw_at(ctx, ...el));
 }
 repaint();
