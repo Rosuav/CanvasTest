@@ -186,6 +186,7 @@ canvas.addEventListener("pointermove", e => {
 });
 
 canvas.addEventListener("pointerup", e => {
+	if (!dragging) return;
 	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
 	let parent, conn;
 	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
