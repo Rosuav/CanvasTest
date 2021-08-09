@@ -44,25 +44,24 @@ function repaint() {
 }
 repaint();
 
-let dragging = -1, dragbasex = 50, dragbasey = 10;
+let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("mousedown", e => {
 	if (e.button) return; //Only left clicks
-	dragging = -1;
-	elements.forEach((el, i) => {
+	dragging = null;
+	elements.forEach(el => {
 		if (el.fixed) return;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		if (ctx.isPointInPath(objects[el.type], x, y)) {
-			dragging = i; dragbasex = x; dragbasey = y;
+			dragging = el; dragbasex = x; dragbasey = y;
 		}
 	});
 });
 
 canvas.addEventListener("mousemove", e => {
-	if (dragging < 0) return;
-	const el = elements[dragging];
-	el.x = e.offsetX - dragbasex;
-	el.y = e.offsetY - dragbasey;
+	if (!dragging) return;
+	dragging.x = e.offsetX - dragbasex;
+	dragging.y = e.offsetY - dragbasey;
 	repaint();
 });
 
-canvas.addEventListener("mouseup", e => dragging = -1);
+canvas.addEventListener("mouseup", e => dragging = null);
