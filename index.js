@@ -27,7 +27,7 @@ const objects = {
 }
 
 const elements = [
-	{type: "anchor", x: 10, y: 10},
+	{type: "anchor", x: 10, y: 10, fixed: true},
 	{type: "text", x: 10, y: 100},
 ];
 
@@ -49,6 +49,7 @@ canvas.addEventListener("mousedown", e => {
 	if (e.button) return; //Only left clicks
 	dragging = -1;
 	elements.forEach((el, i) => {
+		if (el.fixed) return;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		if (ctx.isPointInPath(objects[el.type], x, y)) {
 			dragging = i; dragbasex = x; dragbasey = y;
