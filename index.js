@@ -1,3 +1,4 @@
+const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
 function build_element_path(has_parent, child_count) {
@@ -18,13 +19,16 @@ function build_element_path(has_parent, child_count) {
 		path.arc(0, 15, 10, Math.PI / 2, Math.PI * 3 / 2, true);
 	}
 	path.closePath();
-	return path
+	return path;
 }
 
 const objects = {
 	anchor: build_element_path(0, 1),
 	text: build_element_path(1, 0),
-}
+};
+const connections = {
+	anchor: [{x: 10, y: 30, name: "message"}],
+};
 
 const elements = [
 	{type: "anchor", x: 10, y: 10, fixed: true},
@@ -57,10 +61,21 @@ canvas.addEventListener("mousedown", e => {
 	});
 });
 
+function snap_to_elements(xpos, ypos) {
+	//TODO: Optimize this?? We should be able to check against only those which are close by.
+	for (let el of elements) {
+		for (let conn of connections[el.type] || []) {
+			const snapx = el.x + conn.x, snapy = el.y + conn.y;
+			if (((snapx - xpos) ** 2 + (snapy - ypos) ** 2) <= SNAP_RANGE)
+				return [snapx, snapy]; //First match locks it in. No other snapping done.
+		}
+	}
+	return [xpos, ypos];
+}
+
 canvas.addEventListener("mousemove", e => {
 	if (!dragging) return;
-	dragging.x = e.offsetX - dragbasex;
-	dragging.y = e.offsetY - dragbasey;
+	[dragging.x, dragging.y] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
 	repaint();
 });
 
