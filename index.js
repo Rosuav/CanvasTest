@@ -35,4 +35,9 @@ function repaint() {
 	elements.forEach(el => draw_at(ctx, ...el));
 }
 repaint();
-const intv = setInterval(() => {if (++elements[0][1] >= 300) clearInterval(intv); repaint()}, 10);
+function move() {
+	if (elements[0][1]++ < 300) requestAnimationFrame(move);
+	repaint();
+}
+requestAnimationFrame(move);
+
