@@ -19,20 +19,20 @@ const objects = {
 }
 
 const elements = [
-	["anchor", 10, 10],
-	["anchor", 10, 80],
+	{type: "anchor", x: 10, y: 10},
+	{type: "anchor", x: 10, y: 80},
 ];
 
-function draw_at(ctx, path, x, y) {
+function draw_at(ctx, el) {
 	ctx.save();
-	ctx.translate(x, y);
-	ctx.stroke(objects[path]);
+	ctx.translate(el.x|0, el.y|0);
+	ctx.stroke(objects[el.type]);
 	ctx.restore();
 }
 
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	elements.forEach(el => draw_at(ctx, ...el));
+	elements.forEach(el => draw_at(ctx, el));
 }
 repaint();
 
@@ -41,8 +41,8 @@ canvas.addEventListener("mousedown", e => {
 	if (e.button) return; //Only left clicks
 	dragging = -1;
 	elements.forEach((el, i) => {
-		const x = e.offsetX - el[1], y = e.offsetY - el[2];
-		if (ctx.isPointInPath(objects[el[0]], x, y)) {
+		const x = e.offsetX - el.x, y = e.offsetY - el.y;
+		if (ctx.isPointInPath(objects[el.type], x, y)) {
 			dragging = i; dragbasex = x; dragbasey = y;
 		}
 	});
@@ -51,8 +51,8 @@ canvas.addEventListener("mousedown", e => {
 canvas.addEventListener("mousemove", e => {
 	if (dragging < 0) return;
 	const el = elements[dragging];
-	el[1] = e.offsetX - dragbasex;
-	el[2] = e.offsetY - dragbasey;
+	el.x = e.offsetX - dragbasex;
+	el.y = e.offsetY - dragbasey;
 	repaint();
 });
 
