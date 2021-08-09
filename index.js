@@ -13,6 +13,13 @@
 * Create paths as required, and cache them. Identify required paths by their parent and child counts.
 * Element types define the number of child *groups* but not the number of children.
 
+Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
+JSON format that the current editor uses, making them completely compatible. Note that information that
+cannot be represented in JSON (eg exact pixel positions, and unanchored elements) will be lost on save/load.
+
+There will always be a single anchor, whose text (and possibly colour) will be determined by what we are
+editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
+will be configurable (eg triggers).
 */
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
