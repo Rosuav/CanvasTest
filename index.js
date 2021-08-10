@@ -21,10 +21,25 @@ const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
 
 const types = {
-	anchor: {fixed: true, children: ["message"]},
-	text: { },
-	builtin: {children: ["message"]},
-	conditional: {children: ["message", "otherwise"]},
+	anchor: {
+		fixed: true, children: ["message"],
+		labellabel: "Invocation", labelfixed: true,
+		typedesc: "This is how everything starts. You can't change this.",
+	},
+	text: {
+		labellabel: "Text",
+		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
+	},
+	builtin: {
+		children: ["message"],
+		labellabel: "Source", labelfixed: true,
+		typedesc: "Fetch extra information. TODO: Show the precise extra info for this builtin.",
+	},
+	conditional: {
+		children: ["message", "otherwise"],
+		labellabel: "Condition",
+		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
+	},
 };
 
 const path_cache = { }; //TODO: Clean this out periodically
@@ -38,7 +53,6 @@ function element_path(element) {
 		cache_key += "[" + childset.map(c => element_path(c).totheight).join() + "]";
 	}
 	if (path_cache[cache_key]) return path_cache[cache_key];
-	console.log("Generating path for", cache_key);
 	const type = types[element.type];
 	const path = new Path2D;
 	path.moveTo(0, 0);
@@ -223,10 +237,16 @@ canvas.addEventListener("pointerup", e => {
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
 	for (let el of elements) {
+		if (el.template) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
 			console.log("You clicked on:", el);
+			const type = types[el.type];
+			set_content("#labellabel", type.labellabel);
+			set_content("#typedesc", type.typedesc);
+			DOM("[name=label]").value = el.label;
+			DOM("[name=label]").disabled = type.labelfixed;
 			document.getElementById("properties").showModal();
 			return;
 		}
