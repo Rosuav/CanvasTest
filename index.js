@@ -24,9 +24,7 @@ const ctx = canvas.getContext('2d');
 
 const types = {
 	anchor: {
-		fixed: true, children: ["message"],
-		labellabel: "Invocation", labelfixed: true,
-		typedesc: "This is how everything starts. You can't change this.",
+		fixed: true, children: ["message"], labelfixed: true,
 	},
 	text: {
 		labellabel: "Text",
@@ -89,7 +87,8 @@ function element_path(element) {
 	return path_cache[cache_key] = {path, connections, totheight: y};
 }
 const elements = [
-	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""]},
+	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""],
+		labellabel: "Invocation", desc: "This is how everything starts. You can't change this."},
 	{type: "text", x: 220, y: 30, color: "#77eeee", label: "Hello, world!"},
 	{type: "builtin", x: 250, y: 100, color: "#ee77ee", label: "Get channel uptime", message: [""]},
 ];
@@ -104,7 +103,8 @@ let template_x = canvas.width - 205, template_y = 10;
 	elements.push(el);
 	template_y += element_path(el).totheight + 10;
 });
-const trashcan = {type: "anchor", x: template_x, y: template_y, color: "#999999", label: "Trash", message: [""]}
+const trashcan = {type: "anchor", x: template_x, y: template_y, color: "#999999", label: "Trash", message: [""],
+	labellabel: "Trash can", desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
 elements.push(trashcan);
 
 function draw_at(ctx, el, parent, reposition) {
@@ -256,8 +256,8 @@ canvas.addEventListener("dblclick", e => {
 		if (ctx.isPointInPath(path.path, x, y)) {
 			console.log("You clicked on:", el);
 			const type = types[el.type];
-			set_content("#labellabel", type.labellabel);
-			set_content("#typedesc", type.typedesc);
+			set_content("#labellabel", type.labellabel || el.labellabel);
+			set_content("#typedesc", type.typedesc || el.desc);
 			DOM("[name=label]").value = el.label;
 			DOM("[name=label]").disabled = type.labelfixed;
 			document.getElementById("properties").showModal();
