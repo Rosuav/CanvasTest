@@ -83,7 +83,6 @@ function element_path(element) {
 		path.arc(0, 15, 10, Math.PI / 2, Math.PI * 3 / 2, true);
 	}
 	path.closePath();
-	console.log("Connections:", connections);
 	return path_cache[cache_key] = {path, connections, totheight: y};
 }
 const elements = [
@@ -254,7 +253,6 @@ canvas.addEventListener("dblclick", e => {
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
-			console.log("You clicked on:", el);
 			const type = types[el.type];
 			set_content("#labellabel", type.labellabel || el.labellabel);
 			set_content("#typedesc", type.typedesc || el.desc);
