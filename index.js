@@ -99,25 +99,25 @@ function element_path(element) {
 	path.closePath();
 	return path_cache[cache_key] = {path, connections, totheight: y};
 }
-const elements = [
+const actives = [
 	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""],
 		labellabel: "Invocation", desc: "This is how everything starts. You can't change this."},
 ];
-let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
-let template_x = canvas.width - 205, template_y = 10;
-[
-	{type: "text", color: "#77eeee", label: "Create new text message", newlabel: "Sample text message"},
-	{type: "conditional", color: "#7777ee", label: "Create new conditional", newlabel: "If..."},
-	{type: "builtin", color: "#ee77ee", label: "Fetch extra information", newlabel: "TODO -- builtin"},
-].forEach(t => {
-	const el = {...t, x: template_x, y: template_y, template: true};
-	for (let attr of types[el.type].children || []) el[attr] = [""];
-	elements.push(el);
-	template_y += element_path(el).totheight + 10;
-});
-const trashcan = {type: "anchor", x: template_x, y: template_y, color: "#999999", label: "Trash", message: [""],
+const favourites = [];
+const trays = {
+	Default: [
+		{type: "text", color: "#77eeee", label: "Create new text message", newlabel: "Sample text message"},
+		{type: "conditional", color: "#7777ee", label: "Create new conditional", newlabel: "If..."},
+		{type: "builtin", color: "#ee77ee", label: "Fetch extra information", newlabel: "TODO -- builtin"},
+	],
+};
+let current_tray = "Default";
+const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""],
 	labellabel: "Trash can", desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
-elements.push(trashcan);
+const specials = [trashcan];
+let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
+function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
+const template_x = canvas.width - 205, template_y = 10;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -148,7 +148,15 @@ function draw_at(ctx, el, parent, reposition) {
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//SPLITPOINT: Draw facts, then actives
-	elements.forEach(el => el.parent || draw_at(ctx, el));
+	let y = template_y;
+	facts.forEach(el => {
+		el.template = true; //shouldn't need this any more now
+		el.x = template_x; el.y = y;
+		for (let attr of types[el.type].children || []) el[attr] = [""]; //should be one-off init
+		draw_at(ctx, el);
+		y += element_path(el).totheight + 10;
+	});
+	actives.forEach(el => el.parent || draw_at(ctx, el));
 }
 repaint();
 
@@ -170,16 +178,16 @@ canvas.addEventListener("pointerdown", e => {
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
 	//SPLITPOINT: Scan actives, then facts
-	for (let el of elements) {
+	for (let el of [...actives, ...facts]) { //TODO: Don't make two arrays if poss
 		if (types[el.type].fixed) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
-			if (el.template) {
+			if (el.template) { //TODO: Apply this to facts, not to actives
 				//Clone and spawn.
 				el = {...el, template: false, label: el.newlabel, fresh: true};
 				for (let attr of types[el.type].children || []) el[attr] = [""];
-				elements.push(el);
+				actives.push(el);
 			}
 			dragging = el; dragbasex = x; dragbasey = y;
 			if (el.parent) {
@@ -209,7 +217,7 @@ function has_parent(child, parent) {
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	//SPLITPOINT: Snap to actives, then check specials (no snap points on templates)
-	for (let el of elements) {
+	for (let el of [...actives, ...specials]) { //TODO: As above, don't make pointless arrays
 		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
 		for (let conn of path.connections || []) {
@@ -240,11 +248,11 @@ canvas.addEventListener("pointerup", e => {
 		if (dragging.fresh) {
 			//It's been picked up off the template but never dropped. Just discard it.
 			//SPLITPOINT: Will always be in actives
-			let idx = elements.length - 1;
+			let idx = actives.length - 1;
 			//It's highly unlikely, but possible, that two pointers could simultaneously drag fresh items
 			//and then the earlier one dragged is the one that gets dropped back on the template.
-			if (dragging !== elements[idx]) idx = elements.indexOf(dragging);
-			elements.splice(idx, 1);
+			if (dragging !== actives[idx]) idx = actives.indexOf(dragging);
+			actives.splice(idx, 1);
 			dragging = null; repaint();
 			return;
 		}
@@ -270,7 +278,7 @@ let propedit = null;
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
 	//SPLITPOINT: Check actives, then facts
-	for (let el of elements) {
+	for (let el of [...actives, ...facts]) { //TODO Pointless
 		if (el.template) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
