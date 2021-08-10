@@ -15,6 +15,7 @@
   - Drag anything to favs that's already there and it will deduplicate (ie destroying the thing)
   - All templates can be double-clicked for more info. They will have a "Favourite" star to toggle.
   - Favs and drawer are drawn at fixed positions. All at template_x, and the y coords calculated.
+  - Right hand column: Favs, then drawer, then specials (currently just Trash)
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
@@ -142,6 +143,7 @@ function draw_at(ctx, el, parent, reposition) {
 
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	//SPLITPOINT: Draw favs, cur drawer, specials, actives
 	elements.forEach(el => el.parent || draw_at(ctx, el));
 }
 repaint();
@@ -163,6 +165,7 @@ canvas.addEventListener("pointerdown", e => {
 	e.preventDefault();
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
+	//SPLITPOINT: Scan actives, then favs, cur drawer, specials
 	for (let el of elements) {
 		if (types[el.type].fixed) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
@@ -201,6 +204,7 @@ function has_parent(child, parent) {
 
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
+	//SPLITPOINT: Snap to actives, then check specials (no snap points on templates)
 	for (let el of elements) {
 		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
@@ -231,6 +235,7 @@ canvas.addEventListener("pointerup", e => {
 		//will dump it on the trash. It can be retrieved until save, otherwise it's gone forever.
 		if (dragging.fresh) {
 			//It's been picked up off the template but never dropped. Just discard it.
+			//SPLITPOINT: Will always be in actives
 			let idx = elements.length - 1;
 			//It's highly unlikely, but possible, that two pointers could simultaneously drag fresh items
 			//and then the earlier one dragged is the one that gets dropped back on the template.
@@ -260,6 +265,7 @@ canvas.addEventListener("pointerup", e => {
 let propedit = null;
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
+	//SPLITPOINT: Check actives, then favs, cur drawer, specials
 	for (let el of elements) {
 		if (el.template) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
