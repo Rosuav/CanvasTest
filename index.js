@@ -90,14 +90,13 @@ function element_path(element) {
 const elements = [
 	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""],
 		labellabel: "Invocation", desc: "This is how everything starts. You can't change this."},
-	{type: "text", x: 220, y: 30, color: "#77eeee", label: "Hello, world!"},
-	{type: "builtin", x: 250, y: 100, color: "#ee77ee", label: "Get channel uptime", message: [""]},
 ];
 
 let template_x = canvas.width - 205, template_y = 10;
 [
 	{type: "text", color: "#77eeee", label: "Create new text message", newlabel: "Sample text message"},
 	{type: "conditional", color: "#7777ee", label: "Create new conditional", newlabel: "If..."},
+	{type: "builtin", color: "#ee77ee", label: "Fetch extra information", newlabel: "TODO -- builtin"},
 ].forEach(t => {
 	const el = {...t, x: template_x, y: template_y, template: true};
 	for (let attr of types[el.type].children || []) el[attr] = [""];
