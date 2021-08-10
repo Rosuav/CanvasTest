@@ -117,7 +117,10 @@ function draw_at(ctx, el, parent, reposition) {
 	ctx.fill(path.path);
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
-	ctx.fillText(el.label || "", 20, 20, 175);
+	let desc = types[el.type].fixed ? "" : "⣿ ";
+	if (el.template) desc = "⯇ ";
+	if (el.label) desc += el.label;
+	ctx.fillText(desc, 20, 20, 175);
 	ctx.stroke(path.path);
 	ctx.restore();
 	const children = types[el.type].children || [];
