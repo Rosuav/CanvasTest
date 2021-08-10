@@ -14,8 +14,6 @@ cannot be represented in JSON (eg exact pixel positions, and unanchored elements
 There will always be a single anchor, whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers).
-
-FIXME: There's some sort of weird issue when removing something and it collapsing double empties.
 */
 import {on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
@@ -140,14 +138,14 @@ function repaint() {
 repaint();
 
 function remove_child(childset, idx) {
-	while (++idx < childset.length - 1) {
+	while (++idx < childset.length) {
 		const cur = childset[idx - 1] = childset[idx];
 		if (cur === "") continue;
 		//assert cur.parent is array
 		//assert cur.parent[0][cur.parent[1]] is childset
 		cur.parent[2]--;
 	}
-	childset.pop();
+	childset.pop(); //assert returns ""
 }
 
 let dragging = null, dragbasex = 50, dragbasey = 10;
