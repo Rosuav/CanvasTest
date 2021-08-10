@@ -6,6 +6,15 @@
   but maybe it'd be better to have a more visually obvious indicator?
 * Variant templates. I want to be able to look at a single thing saying "drag a builtin from here" and
   then pick and choose WHICH builtin.
+  - Drawers. Open up a drawer that contains all the builtins.
+  - With a drawer open, all its templates are visible.
+  - Or maybe ALL templates go in boxes?
+  - Favourites above the drawers are always visible
+  - Drag a template to favs and it'll stay there
+  - Drag an element to favs and it becomes a template there
+  - Drag anything to favs that's already there and it will deduplicate (ie destroying the thing)
+  - All templates can be double-clicked for more info. They will have a "Favourite" star to toggle.
+  - Favs and drawer are drawn at fixed positions. All at template_x, and the y coords calculated.
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
