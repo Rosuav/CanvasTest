@@ -270,7 +270,7 @@ canvas.addEventListener("dblclick", e => {
 	}
 });
 
-on("click", "#setprops", e => {
+on("submit", "#setprops", e => {
 	const type = types[propedit.type];
 	if (!type.labelfixed) propedit.label = DOM("[name=label]").value;
 	propedit = null;
