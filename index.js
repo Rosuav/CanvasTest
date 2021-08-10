@@ -4,6 +4,8 @@
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
+* Variant templates. I want to be able to look at a single thing saying "drag a builtin from here" and
+  then pick and choose WHICH builtin.
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
