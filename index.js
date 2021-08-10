@@ -246,6 +246,7 @@ canvas.addEventListener("pointerup", e => {
 	repaint();
 });
 
+let propedit = null;
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
 	for (let el of elements) {
@@ -253,13 +254,22 @@ canvas.addEventListener("dblclick", e => {
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
 		const path = element_path(el);
 		if (ctx.isPointInPath(path.path, x, y)) {
+			propedit = el;
 			const type = types[el.type];
 			set_content("#labellabel", type.labellabel || el.labellabel);
 			set_content("#typedesc", type.typedesc || el.desc);
 			DOM("[name=label]").value = el.label;
 			DOM("[name=label]").disabled = type.labelfixed;
-			document.getElementById("properties").showModal();
+			DOM("#properties").showModal();
 			return;
 		}
 	}
+});
+
+on("click", "#setprops", e => {
+	const type = types[propedit.type];
+	if (!type.labelfixed) propedit.label = DOM("[name=label]").value;
+	propedit = null;
+	e.match.closest("dialog").close();
+	repaint();
 });
