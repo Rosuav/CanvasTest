@@ -262,11 +262,14 @@ canvas.addEventListener("dblclick", e => {
 			set_content("#typedesc", type.typedesc || el.desc);
 			DOM("[name=label]").value = el.label;
 			DOM("[name=label]").disabled = type.labelfixed;
+			set_content("#properties form button", "Close");
 			DOM("#properties").showModal();
 			return;
 		}
 	}
 });
+
+on("input", "#properties input", e => set_content("#properties form button", "Apply changes"));
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
