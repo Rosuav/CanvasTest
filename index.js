@@ -4,18 +4,22 @@
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
-* Variant templates. I want to be able to look at a single thing saying "drag a builtin from here" and
-  then pick and choose WHICH builtin.
-  - Drawers. Open up a drawer that contains all the builtins.
-  - With a drawer open, all its templates are visible.
-  - Or maybe ALL templates go in boxes?
-  - Favourites above the drawers are always visible
-  - Drag a template to favs and it'll stay there
-  - Drag an element to favs and it becomes a template there
-  - Drag anything to favs that's already there and it will deduplicate (ie destroying the thing)
-  - All templates can be double-clicked for more info. They will have a "Favourite" star to toggle.
-  - Favs and drawer are drawn at fixed positions. All at template_x, and the y coords calculated.
-  - Right hand column: Favs, then drawer, then specials (currently just Trash)
+* Template trays. All templates are organized into trays, of which one (and only one) is visible.
+  - The right edge of the area is split into three sections: Favourites, Trays, and Specials
+  - Favourites are chosen by the user and will be retained
+    - Drag a template to favs and it stays there
+    - Drag an element to favs and it becomes a template there
+    - Drag anything to favs that's already there and it will deduplicate (ie destroying the thing)
+    - All templates, including in favs, can be double-clicked for more info, and will have a star
+      to fav/unfav it.
+  - Trays are predetermined. Precisely one tray will be selected at any given time. The default
+    tray, on startup, is chosen by code (probably "text" or maybe "defaults").
+    - Only the current tray can be interacted with, but other trays need to be hinted at somehow.
+  - Specials currently contains just one thing: Trash. It's always below the current tray.
+  - The visible elements are: FAvourites, the Current Tray, and Specials. Together, FACTS.
+* An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
+  and is everything that isn't in the Favs/Trays/Specials.
+  - The anchor point may belong in Actives or may belong in Specials. Uncertain.
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
@@ -99,7 +103,7 @@ const elements = [
 	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""],
 		labellabel: "Invocation", desc: "This is how everything starts. You can't change this."},
 ];
-
+let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 let template_x = canvas.width - 205, template_y = 10;
 [
 	{type: "text", color: "#77eeee", label: "Create new text message", newlabel: "Sample text message"},
@@ -143,7 +147,7 @@ function draw_at(ctx, el, parent, reposition) {
 
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//SPLITPOINT: Draw favs, cur drawer, specials, actives
+	//SPLITPOINT: Draw facts, then actives
 	elements.forEach(el => el.parent || draw_at(ctx, el));
 }
 repaint();
@@ -165,7 +169,7 @@ canvas.addEventListener("pointerdown", e => {
 	e.preventDefault();
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
-	//SPLITPOINT: Scan actives, then favs, cur drawer, specials
+	//SPLITPOINT: Scan actives, then facts
 	for (let el of elements) {
 		if (types[el.type].fixed) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
@@ -265,7 +269,7 @@ canvas.addEventListener("pointerup", e => {
 let propedit = null;
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
-	//SPLITPOINT: Check actives, then favs, cur drawer, specials
+	//SPLITPOINT: Check actives, then facts
 	for (let el of elements) {
 		if (el.template) continue;
 		const x = e.offsetX - el.x, y = e.offsetY - el.y;
