@@ -11,6 +11,27 @@ main {
 canvas {
 	border: 1px solid black;
 }
+
+/* Lifted from stillebot.css and won't need to be duplicated back */
+dialog > section {
+	display: flex;
+	flex-direction: column;
+}
+dialog > section > header {
+	display: flex;
+	justify-content: space-between;
+}
+dialog > section > header > h3 {
+	margin: 0.5em 0;
+}
+dialog > section > div {
+	overflow-y: auto;
+	max-height: 70vh;
+}
+.dialog_cancel {
+	position: relative;
+	right: -8px; top: -8px;
+}
 </style>
 <script type=module src="index.js"></script>
 </head>
@@ -22,7 +43,12 @@ I guess you can't see my canvas?
 </canvas>
 <dialog id=properties><section>
 <header><h3>Properties</h3><div><button type=button class=dialog_cancel>x</button></div></header>
-<div>...</div>
+<div>
+<p>
+<label>Label: <input name=label size=50></label>
+</p>
+<p><button type=button id=setprops>Apply changes</button></p>
+</div>
 </section></dialog>
 </main>
 </html>
