@@ -2,6 +2,8 @@
 
 * Export to JSON
 * Drag paint to element to set attributes (eg a "voice" paint)
+* Have a small button on the element or something that shows the properties? Can be done with double click,
+  but maybe it'd be better to have a more visually obvious indicator?
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
@@ -158,7 +160,7 @@ canvas.addEventListener("pointerdown", e => {
 		if (ctx.isPointInPath(path.path, x, y)) {
 			if (el.template) {
 				//Clone and spawn.
-				el = {...el, template: false, label: el.newlabel};
+				el = {...el, template: false, label: el.newlabel, fresh: true};
 				for (let attr of types[el.type].children || []) el[attr] = [""];
 				elements.push(el);
 			}
@@ -210,12 +212,23 @@ canvas.addEventListener("pointermove", e => {
 
 canvas.addEventListener("pointerup", e => {
 	if (!dragging) return;
+	e.target.releasePointerCapture(e.pointerId);
 	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
 	let parent, conn;
 	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
 	if (dragging.x > template_x - 100) {
 		//Dropping something anywhere over the templates (or rather, so its center of mass is over templates)
 		//will dump it on the trash. It can be retrieved until save, otherwise it's gone forever.
+		if (dragging.fresh) {
+			//It's been picked up off the template but never dropped. Just discard it.
+			let idx = elements.length - 1;
+			//It's highly unlikely, but possible, that two pointers could simultaneously drag fresh items
+			//and then the earlier one dragged is the one that gets dropped back on the template.
+			if (dragging !== elements[idx]) idx = elements.indexOf(dragging);
+			elements.splice(idx, 1);
+			dragging = null; repaint();
+			return;
+		}
 		for (let c of element_path(trashcan).connections) {
 			if (trashcan.message[c.index] === "") {
 				parent = trashcan; conn = c;
@@ -223,6 +236,7 @@ canvas.addEventListener("pointerup", e => {
 			}
 		}
 	}
+	delete dragging.fresh;
 	if (parent) {
 		const childset = parent[conn.name];
 		childset[conn.index] = dragging;
@@ -230,7 +244,6 @@ canvas.addEventListener("pointerup", e => {
 		if (conn.index === childset.length - 1) childset.push(""); //Ensure there's always an empty slot at the end
 	}
 	dragging = null;
-	e.target.releasePointerCapture(e.pointerId);
 	repaint();
 });
 
