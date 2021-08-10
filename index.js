@@ -11,9 +11,9 @@ Eventually this will go into StilleBot as an alternative command editor. Saving 
 JSON format that the current editor uses, making them completely compatible. Note that information that
 cannot be represented in JSON (eg exact pixel positions, and unanchored elements) will be lost on save/load.
 
-There will always be a single anchor, whose text (and possibly colour) will be determined by what we are
+There will always be an anchor whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
-will be configurable (eg triggers).
+will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
 */
 import {on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
