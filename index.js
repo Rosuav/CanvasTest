@@ -152,7 +152,7 @@ function repaint() {
 	facts.forEach(el => {
 		el.template = true; //shouldn't need this any more now
 		el.x = template_x; el.y = y;
-		for (let attr of types[el.type].children || []) el[attr] = [""]; //should be one-off init
+		for (let attr of types[el.type].children || []) if (!el[attr]) el[attr] = [""]; //should be one-off init
 		draw_at(ctx, el);
 		y += element_path(el).totheight + 10;
 	});
