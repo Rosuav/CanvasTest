@@ -110,6 +110,11 @@ const trays = {
 		{type: "conditional", color: "#7777ee", label: "Create new conditional", newlabel: "If..."},
 		{type: "builtin", color: "#ee77ee", label: "Fetch extra information", newlabel: "TODO -- builtin"},
 	],
+	Builtins: [
+		{type: "builtin", color: "#ee77ee", label: "Channel uptime"},
+		{type: "builtin", color: "#ee77ee", label: "Shoutout"},
+		{type: "builtin", color: "#ee77ee", label: "Calculator"},
+	],
 };
 let current_tray = "Default";
 const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""],
@@ -117,6 +122,7 @@ const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
+window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
 const template_x = canvas.width - 205, template_y = 10;
 
 function draw_at(ctx, el, parent, reposition) {
@@ -193,7 +199,7 @@ canvas.addEventListener("pointerdown", e => {
 	if (!el) return;
 	if (el.template) {
 		//Clone and spawn.
-		el = {...el, template: false, label: el.newlabel, fresh: true};
+		el = {...el, template: false, label: el.newlabel || el.label, fresh: true};
 		for (let attr of types[el.type].children || []) el[attr] = [""];
 		actives.push(el);
 		refactor();
