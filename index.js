@@ -156,7 +156,7 @@ function repaint() {
 	//SPLITPOINT: Draw facts, then actives
 	let y = template_y;
 	facts.forEach(el => {
-		el.template = true; //shouldn't need this any more now
+		if (el !== trashcan) el.template = true; //HACK: Mark templates. Should be done at time of putting them into tray or favs.
 		el.x = template_x; el.y = y;
 		for (let attr of types[el.type].children || []) if (!el[attr]) el[attr] = [""]; //should be one-off init
 		draw_at(ctx, el);
