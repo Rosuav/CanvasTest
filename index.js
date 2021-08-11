@@ -171,38 +171,44 @@ function remove_child(childset, idx) {
 	childset.pop(); //assert returns ""
 }
 
+function element_at_position(x, y, filter) {
+	//Two loops to avoid constructing unnecessary arrays
+	for (let el of actives) {
+		if (filter && !filter(el)) continue;
+		if (ctx.isPointInPath(element_path(el).path, x - el.x, y - el.y)) return el;
+	}
+	for (let el of facts) {
+		if (filter && !filter(el)) continue;
+		if (ctx.isPointInPath(element_path(el).path, x - el.x, y - el.y)) return el;
+	}
+}
+
 let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
 	e.preventDefault();
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
-	//SPLITPOINT: Scan actives, then facts
-	for (let el of [...actives, ...facts]) { //TODO: Don't make two arrays if poss
-		if (types[el.type].fixed) continue;
-		const x = e.offsetX - el.x, y = e.offsetY - el.y;
-		const path = element_path(el);
-		if (ctx.isPointInPath(path.path, x, y)) {
-			if (el.template) { //TODO: Apply this to facts, not to actives
-				//Clone and spawn.
-				el = {...el, template: false, label: el.newlabel, fresh: true};
-				for (let attr of types[el.type].children || []) el[attr] = [""];
-				actives.push(el);
-			}
-			dragging = el; dragbasex = x; dragbasey = y;
-			if (el.parent) {
-				const childset = el.parent[0][el.parent[1]], idx = el.parent[2];
-				childset[idx] = "";
-				//If this makes a double empty, remove one of them.
-				//This may entail moving other elements up a slot, changing their parent pointers.
-				//(OOB array indexing will never return an empty string)
-				//Note that it is possible to have three in a row, in which case we'll remove twice.
-				while (childset[idx - 1] === "" && childset[idx] === "") remove_child(childset, idx);
-				if (childset[idx] === "" && childset[idx + 1] === "") remove_child(childset, idx);
-				el.parent = null;
-			}
-			return; //Drag the first available and no other.
-		}
+	let el = element_at_position(e.offsetX, e.offsetY, el => !types[el.type].fixed);
+	if (!el) return;
+	if (el.template) {
+		//Clone and spawn.
+		el = {...el, template: false, label: el.newlabel, fresh: true};
+		for (let attr of types[el.type].children || []) el[attr] = [""];
+		actives.push(el);
+		refactor();
+	}
+	dragging = el; dragbasex = e.offsetX - el.x; dragbasey = e.offsetY - el.y;
+	if (el.parent) {
+		const childset = el.parent[0][el.parent[1]], idx = el.parent[2];
+		childset[idx] = "";
+		//If this makes a double empty, remove one of them.
+		//This may entail moving other elements up a slot, changing their parent pointers.
+		//(OOB array indexing will never return an empty string)
+		//Note that it is possible to have three in a row, in which case we'll remove twice.
+		while (childset[idx - 1] === "" && childset[idx] === "") remove_child(childset, idx);
+		if (childset[idx] === "" && childset[idx + 1] === "") remove_child(childset, idx);
+		el.parent = null;
 	}
 });
 
@@ -217,7 +223,7 @@ function has_parent(child, parent) {
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	//SPLITPOINT: Snap to actives, then check specials (no snap points on templates)
-	for (let el of [...actives, ...specials]) { //TODO: As above, don't make pointless arrays
+	for (let el of [...actives, ...specials]) { //TODO: Don't make pointless arrays
 		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
 		for (let conn of path.connections || []) {
@@ -253,6 +259,7 @@ canvas.addEventListener("pointerup", e => {
 			//and then the earlier one dragged is the one that gets dropped back on the template.
 			if (dragging !== actives[idx]) idx = actives.indexOf(dragging);
 			actives.splice(idx, 1);
+			refactor();
 			dragging = null; repaint();
 			return;
 		}
@@ -277,23 +284,17 @@ canvas.addEventListener("pointerup", e => {
 let propedit = null;
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
-	//SPLITPOINT: Check actives, then facts
-	for (let el of [...actives, ...facts]) { //TODO Pointless
-		if (el.template) continue;
-		const x = e.offsetX - el.x, y = e.offsetY - el.y;
-		const path = element_path(el);
-		if (ctx.isPointInPath(path.path, x, y)) {
-			propedit = el;
-			const type = types[el.type];
-			set_content("#labellabel", type.labellabel || el.labellabel);
-			set_content("#typedesc", type.typedesc || el.desc);
-			DOM("[name=label]").value = el.label;
-			DOM("[name=label]").disabled = type.labelfixed;
-			set_content("#properties form button", "Close");
-			DOM("#properties").showModal();
-			return;
-		}
-	}
+	const el = element_at_position(e.offsetX, e.offsetY);
+	if (!el) return;
+	if (el.template) return; //TODO: Pop up some info w/o allowing changes
+	propedit = el;
+	const type = types[el.type];
+	set_content("#labellabel", type.labellabel || el.labellabel);
+	set_content("#typedesc", type.typedesc || el.desc);
+	DOM("[name=label]").value = el.label;
+	DOM("[name=label]").disabled = type.labelfixed;
+	set_content("#properties form button", "Close");
+	DOM("#properties").showModal();
 });
 
 on("input", "#properties input", e => set_content("#properties form button", "Apply changes"));
