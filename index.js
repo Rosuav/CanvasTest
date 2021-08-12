@@ -125,7 +125,7 @@ const trays = {
 };
 const tray_tabs = [
 	{name: "Default", color: "#efdbb2"},
-	{name: "Builtins", color: "#ee77ee"},
+	{name: "Builtins", color: "#f7bbf7"},
 ];
 function make_template(el) {
 	el.template = true;
@@ -139,7 +139,6 @@ const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
-window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
 const tab_width = 15, tab_height = 80;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
@@ -202,6 +201,7 @@ function repaint() {
 		traytab_path.lineTo(0, tab_height + tab_width / 2);
 	}
 	for (let tab of tray_tabs) {
+		tab.y = tab_y;
 		if (tab.name === current_tray) {curtab_y = tab_y; curtab_color = tab.color;} //Current tab is drawn last in case of overlap
 		else {
 			ctx.save();
@@ -258,6 +258,15 @@ let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
 	e.preventDefault();
+	if (e.offsetX >= tray_x) {
+		for (let tab of tray_tabs) {
+			if (e.offsetY >= tab.y && e.offsetY <= tab.y + tab_height) {
+				current_tray = tab.name;
+				refactor(); repaint();
+			}
+		}
+		return;
+	}
 	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
 	let el = element_at_position(e.offsetX, e.offsetY, el => !types[el.type].fixed);
