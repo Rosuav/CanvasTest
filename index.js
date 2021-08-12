@@ -137,7 +137,8 @@ let facts = []; //FAvourites, Current Tray, and Specials. All the elements in th
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
 window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
 const tray_x = canvas.width - 15; let tray_y; //tray_y is calculated during repaint
-const template_x = tray_x - 210, template_y = 10, tab_height = 50;
+const template_x = tray_x - 210, template_y = 10;
+const tab_width = 10, tab_height = 50;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -192,12 +193,12 @@ function repaint() {
 	ctx.save();
 	//Remove the dividing line. It might still be partly there but this makes the tab look connected.
 	ctx.strokeStyle = "#efdbb2";
-	ctx.strokeRect(tray_x, tab_y, 0, tab_height + 20);
+	ctx.strokeRect(tray_x, tab_y, 0, tab_height + tab_width * 2);
 	ctx.beginPath();
 	ctx.moveTo(tray_x, tab_y);
-	ctx.lineTo(tray_x + 10, tab_y + 10);
-	ctx.lineTo(tray_x + 10, tab_y + 10 + tab_height);
-	ctx.lineTo(tray_x, tab_y + 20 + tab_height);
+	ctx.lineTo(tray_x + tab_width, tab_y + tab_width);
+	ctx.lineTo(tray_x + tab_width, tab_y + tab_width + tab_height);
+	ctx.lineTo(tray_x, tab_y + tab_height + tab_width * 2);
 	ctx.fillStyle = "#efdbb2"; ctx.strokeStyle = "black";
 	ctx.fill();
 	ctx.stroke();
