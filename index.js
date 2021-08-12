@@ -123,6 +123,10 @@ const trays = {
 		{type: "builtin", color: "#ee77ee", label: "Calculator"},
 	],
 };
+const tray_tabs = [
+	{name: "Default", color: "#efdbb2"},
+	{name: "Builtins", color: "#ee77ee"},
+];
 function make_template(el) {
 	el.template = true;
 	for (let attr of types[el.type].children || []) el[attr] = [""];
@@ -139,6 +143,7 @@ window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow 
 const tab_width = 15, tab_height = 50;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
+let traytab_path = null;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -187,22 +192,40 @@ function boxed_set(set, color, desc, y) {
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	tray_y = boxed_set(favourites, "#eeffee", "> Drop here to save favourites <", template_y);
-	let spec_y = boxed_set(trays[current_tray], "#efdbb2", "Current tray: " + current_tray, tray_y);
 	//Draw the tabs down the side of the tray
-	let tab_y = tray_y + tab_width;
-	ctx.save();
-	//Remove the dividing line. It might still be partly there but this makes the tab look connected.
-	ctx.strokeStyle = "#efdbb2";
-	ctx.strokeRect(tray_x, tab_y, 0, tab_height + tab_width * 2);
-	ctx.beginPath();
-	ctx.moveTo(tray_x, tab_y);
-	ctx.lineTo(tray_x + tab_width, tab_y + tab_width);
-	ctx.lineTo(tray_x + tab_width, tab_y + tab_width + tab_height);
-	ctx.lineTo(tray_x, tab_y + tab_height + tab_width * 2);
-	ctx.fillStyle = "#efdbb2"; ctx.strokeStyle = "black";
-	ctx.fill();
-	ctx.stroke();
-	ctx.restore();
+	let tab_y = tray_y + tab_width, curtab_y = 0, curtab_color = "#00ff00";
+	if (!traytab_path) {
+		traytab_path = new Path2D;
+		traytab_path.moveTo(0, 0);
+		traytab_path.lineTo(tab_width, tab_width);
+		traytab_path.lineTo(tab_width, tab_width + tab_height);
+		traytab_path.lineTo(0, tab_height + tab_width * 2);
+	}
+	for (let tab of tray_tabs) {
+		if (tab.name === current_tray) {curtab_y = tab_y; curtab_color = tab.color;} //Current tab is drawn last in case of overlap
+		else {
+			ctx.save();
+			ctx.translate(tray_x, tab_y);
+			ctx.fillStyle = tab.color;
+			ctx.fill(traytab_path);
+			ctx.stroke(traytab_path);
+			ctx.restore();
+		}
+		tab_y += tab_height + tab_width * 2 - 5;
+	}
+	let spec_y = boxed_set(trays[current_tray], curtab_color, "Current tray: " + current_tray, tray_y);
+	if (curtab_y) {
+		//Draw the current tab
+		ctx.save();
+		ctx.translate(tray_x, curtab_y);
+		//Remove the dividing line. It might still be partly there but this makes the tab look connected.
+		ctx.strokeStyle = curtab_color;
+		ctx.strokeRect(0, 0, 0, tab_height + tab_width * 2);
+		ctx.fillStyle = curtab_color; ctx.strokeStyle = "black";
+		ctx.fill(traytab_path);
+		ctx.stroke(traytab_path);
+		ctx.restore();
+	}
 	render(specials, spec_y);
 	actives.forEach(el => el.parent || draw_at(ctx, el));
 }
