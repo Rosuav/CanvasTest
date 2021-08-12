@@ -161,20 +161,20 @@ function draw_at(ctx, el, parent, reposition) {
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//SPLITPOINT: Draw facts, then actives
-	let y = template_y;
+	const h = favourites.map(el => element_path(el).totheight + 10).reduce((x,y) => x + y, 40)
+	ctx.fillStyle = "#eeffee";
+	ctx.fillRect(template_x - 10, template_y, 220, h);
+	ctx.strokeRect(template_x - 10, template_y, 220, h);
+	ctx.font = "12px sans"; ctx.fillStyle = "black";
+	ctx.fillText("> Drop here to save favourites <", template_x + 15, template_y + 15, 175);
+	let y = template_y + 40;
 	const render = set => set.forEach(el => {
 		el.x = template_x; el.y = y;
 		draw_at(ctx, el);
 		y += element_path(el).totheight + 10;
 	});
 	render(favourites);
-	y += 50;
-	ctx.fillStyle = "#eeffee";
-	ctx.fillRect(template_x, template_y, 200, y - template_y - 10);
-	ctx.strokeRect(template_x, template_y, 200, y - template_y - 10);
-	ctx.font = "12px sans"; ctx.fillStyle = "black";
-	ctx.fillText("> Drop here to save favourites <", template_x + 15, template_y + 15, 175);
-	tray_y = y;
+	tray_y = y += 10;
 	render(trays[current_tray]);
 	render(specials);
 	actives.forEach(el => el.parent || draw_at(ctx, el));
