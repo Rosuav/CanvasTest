@@ -32,6 +32,8 @@ will be configurable (eg triggers). Other anchors have special purposes (eg Tras
 import {on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
+const FAVOURITES_ATTRIBUTES = "type label color".split(" "); //Saveable attributes of favourites
+
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
@@ -287,7 +289,10 @@ canvas.addEventListener("pointerup", e => {
 			//but deduplicate against all other Favourites.
 			let dupe = false;
 			for (let f of favourites) {
-				
+				let same = true;
+				for (let a of FAVOURITES_ATTRIBUTES)
+					if (f[a] !== dragging[a]) {same = false; break;}
+				if (same) {dupe = true; break;}
 			}
 			if (!dupe) //In Python, this would be a for-else clause
 				favourites.push(make_template({...dragging}));
