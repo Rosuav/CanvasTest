@@ -220,7 +220,7 @@ function repaint() {
 		ctx.translate(tray_x, curtab_y);
 		//Remove the dividing line. It might still be partly there but this makes the tab look connected.
 		ctx.strokeStyle = curtab_color;
-		ctx.strokeRect(0, 0, 0, tab_height);
+		ctx.strokeRect(0, 0, 0, tab_height + tab_width / 2);
 		ctx.fillStyle = curtab_color; ctx.strokeStyle = "black";
 		ctx.fill(traytab_path);
 		ctx.stroke(traytab_path);
