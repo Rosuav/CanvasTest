@@ -51,6 +51,12 @@ const types = {
 		labellabel: "Text",
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
+	flags: {
+		//Generic type that applies some sort of flag. Needs a label, a flag, and a value.
+		children: ["message"],
+		labellabel: "Effect", labelfixed: true,
+		typedesc: "Apply some sort of change to the messages within it",
+	},
 	builtin: {
 		children: ["message"],
 		labellabel: "Source", labelfixed: true,
@@ -115,6 +121,8 @@ const trays = {
 	Default: [
 		{type: "text", color: "#77eeee", label: "Send text to the channel", newlabel: "Sample text message"},
 		{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"},
+		{type: "flags", color: "#77ee77", label: "Delay", newlabel: "Wait 2 seconds", flag: "delay", value: 2},
+		{type: "flags", color: "#ee7777", label: "Randomize", newlabel: "Random message", flag: "mode", value: "random"},
 	],
 	Builtins: [
 		{type: "builtin", color: "#ee77ee", label: "Channel uptime"},
