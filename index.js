@@ -129,8 +129,8 @@ const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
 window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
-const trayselect_x = canvas.width - 20; //trayselect_y is the same as the y of the first tray (ie template_y plus height of favs)
-const template_x = trayselect_x - 205, template_y = 10;
+const tray_x = canvas.width - 20; let tray_y; //tray_y is calculated during repaint
+const template_x = tray_x - 205, template_y = 10;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -168,6 +168,13 @@ function repaint() {
 		y += element_path(el).totheight + 10;
 	});
 	render(favourites);
+	y += 50;
+	ctx.fillStyle = "#eeffee";
+	ctx.fillRect(template_x, template_y, 200, y - template_y - 10);
+	ctx.strokeRect(template_x, template_y, 200, y - template_y - 10);
+	ctx.font = "12px sans"; ctx.fillStyle = "black";
+	ctx.fillText("> Drop here to save favourites <", template_x + 15, template_y + 15, 175);
+	tray_y = y;
 	render(trays[current_tray]);
 	render(specials);
 	actives.forEach(el => el.parent || draw_at(ctx, el));
