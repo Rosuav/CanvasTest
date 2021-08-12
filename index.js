@@ -271,8 +271,27 @@ canvas.addEventListener("pointerup", e => {
 	let parent, conn;
 	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
 	if (dragging.x > template_x - 100) {
-		//Dropping something anywhere over the templates (or rather, so its center of mass is over templates)
+		//Dropping something over the favourites (the top section of templates) will save it as a
+		//favourite. Dropping it anywhere else (over templates, over trash, or below the trash)
 		//will dump it on the trash. It can be retrieved until save, otherwise it's gone forever.
+		if (dragging.y < tray_y) {
+			//Three possibilities.
+			//1) A favourite was dropped back onto favs (while still fresh)
+			//   - Discard it. It's a duplicate.
+			//2) A template was dropped onto favs (while still fresh)
+			//   - Save as fav, discard the dragged element.
+			//3) A non-fresh element was dropped
+			//   - Remove the draggable element and add to favs.
+			//They all function the same way, though: remove the Active, add to Favourites,
+			//but deduplicate against all other Favourites.
+			let dupe = false;
+			for (let f of favourites) {
+				
+			}
+			if (!dupe) //In Python, this would be a for-else clause
+				favourites.push(make_template({...dragging}));
+			dragging.fresh = true; //Force it to be discarded
+		}
 		if (dragging.fresh) {
 			//It's been picked up off the template but never dropped. Just discard it.
 			//SPLITPOINT: Will always be in actives
