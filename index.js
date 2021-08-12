@@ -140,7 +140,7 @@ const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
 window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
-const tab_width = 15, tab_height = 50;
+const tab_width = 15, tab_height = 80;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
 let traytab_path = null;
@@ -198,8 +198,8 @@ function repaint() {
 		traytab_path = new Path2D;
 		traytab_path.moveTo(0, 0);
 		traytab_path.lineTo(tab_width, tab_width);
-		traytab_path.lineTo(tab_width, tab_width + tab_height);
-		traytab_path.lineTo(0, tab_height + tab_width * 2);
+		traytab_path.lineTo(tab_width, tab_height - tab_width / 2);
+		traytab_path.lineTo(0, tab_height + tab_width / 2);
 	}
 	for (let tab of tray_tabs) {
 		if (tab.name === current_tray) {curtab_y = tab_y; curtab_color = tab.color;} //Current tab is drawn last in case of overlap
@@ -211,7 +211,7 @@ function repaint() {
 			ctx.stroke(traytab_path);
 			ctx.restore();
 		}
-		tab_y += tab_height + tab_width * 2 - 5;
+		tab_y += tab_height;
 	}
 	let spec_y = boxed_set(trays[current_tray], curtab_color, "Current tray: " + current_tray, tray_y);
 	if (curtab_y) {
@@ -220,7 +220,7 @@ function repaint() {
 		ctx.translate(tray_x, curtab_y);
 		//Remove the dividing line. It might still be partly there but this makes the tab look connected.
 		ctx.strokeStyle = curtab_color;
-		ctx.strokeRect(0, 0, 0, tab_height + tab_width * 2);
+		ctx.strokeRect(0, 0, 0, tab_height);
 		ctx.fillStyle = curtab_color; ctx.strokeStyle = "black";
 		ctx.fill(traytab_path);
 		ctx.stroke(traytab_path);
