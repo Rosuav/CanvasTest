@@ -162,7 +162,6 @@ function draw_at(ctx, el, parent, reposition) {
 
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//SPLITPOINT: Draw facts, then actives
 	const h = favourites.map(el => element_path(el).totheight + 10).reduce((x,y) => x + y, 40)
 	ctx.fillStyle = "#eeffee";
 	ctx.fillRect(template_x - 10, template_y, 220, h);
@@ -247,7 +246,6 @@ function has_parent(child, parent) {
 
 function snap_to_elements(xpos, ypos) {
 	//TODO: Optimize this?? We should be able to check against only those which are close by.
-	//SPLITPOINT: Snap to actives, then check specials (no snap points on templates)
 	for (let el of [...actives, ...specials]) { //TODO: Don't make pointless arrays
 		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
@@ -300,7 +298,6 @@ canvas.addEventListener("pointerup", e => {
 		}
 		if (dragging.fresh) {
 			//It's been picked up off the template but never dropped. Just discard it.
-			//SPLITPOINT: Will always be in actives
 			let idx = actives.length - 1;
 			//It's highly unlikely, but possible, that two pointers could simultaneously drag fresh items
 			//and then the earlier one dragged is the one that gets dropped back on the template.
