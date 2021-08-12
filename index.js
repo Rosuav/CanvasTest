@@ -216,6 +216,7 @@ canvas.addEventListener("pointerdown", e => {
 	if (el.template) {
 		//Clone and spawn.
 		el = {...el, template: false, label: el.newlabel || el.label, fresh: true};
+		if (el.newlabel) delete el.newlabel;
 		for (let attr of types[el.type].children || []) el[attr] = [""];
 		actives.push(el);
 		refactor();
