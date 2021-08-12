@@ -1,29 +1,18 @@
 /* TODO
 
 * Export to JSON
+* Load from JSON
+  - For complex components, process them in the same order that connection.pike will.
+    - If it has a delay, render a delay component, then erase the delay and render the rest as a child.
+    - If it has a voice, ditto (or that might be paint)
+      - Does StilleBot have a way to reset to default voice inside a subtree??
+    - Destination, Builtin, Conditional, Destination
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
-* Template trays. All templates are organized into trays, of which one (and only one) is visible.
-  - The right edge of the area is split into three sections: Favourites, Trays, and Specials
-  - Favourites are chosen by the user and will be retained
-    - Drag a template to favs and it stays there
-    - Drag an element to favs and it becomes a template there
-    - Drag anything to favs that's already there and it will deduplicate (ie destroying the thing)
-    - All templates, including in favs, can be double-clicked for more info, and will have a star
-      to fav/unfav it.
-  - Trays are predetermined. Precisely one tray will be selected at any given time. The default
-    tray, on startup, is chosen by code (probably "text" or maybe "defaults").
-    - Only the current tray can be interacted with, but other trays need to be hinted at somehow.
-  - Specials currently contains just one thing: Trash. It's always below the current tray.
-  - The visible elements are: FAvourites, the Current Tray, and Specials. Together, FACTS.
-  - Add tabs to the side of the tray. I guess it's not really a tray any more if it's drawn like
-    that, but a notebook is probably the right UI for this. Can I do hover text over short tab
-    names?
-  - Each tab/tray should have its own colour. The current one has no separating line - so it's a
-    non-closed path. The current tray's colour becomes the colour of the box.
-* An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
-  and is everything that isn't in the Favs/Trays/Specials.
+
+An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
+and is everything that isn't in the Favs/Trays/Specials.
   - The anchor point may belong in Actives or may belong in Specials. Uncertain.
 
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
