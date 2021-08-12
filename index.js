@@ -17,6 +17,11 @@
     - Only the current tray can be interacted with, but other trays need to be hinted at somehow.
   - Specials currently contains just one thing: Trash. It's always below the current tray.
   - The visible elements are: FAvourites, the Current Tray, and Specials. Together, FACTS.
+  - Add tabs to the side of the tray. I guess it's not really a tray any more if it's drawn like
+    that, but a notebook is probably the right UI for this. Can I do hover text over short tab
+    names?
+  - Each tab/tray should have its own colour. The current one has no separating line - so it's a
+    non-closed path. The current tray's colour becomes the colour of the box.
 * An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
   and is everything that isn't in the Favs/Trays/Specials.
   - The anchor point may belong in Actives or may belong in Specials. Uncertain.
