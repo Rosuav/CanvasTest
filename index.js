@@ -116,6 +116,12 @@ const trays = {
 		{type: "builtin", color: "#ee77ee", label: "Calculator"},
 	],
 };
+function make_template(el) {
+	el.template = true;
+	for (let attr of types[el.type].children || []) el[attr] = [""];
+	return el; //For ease of adding into favs
+}
+Object.values(trays).forEach(t => t.forEach(e => make_template(e)));
 let current_tray = "Default";
 const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""],
 	labellabel: "Trash can", desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
@@ -157,13 +163,12 @@ function repaint() {
 	//SPLITPOINT: Draw facts, then actives
 	let y = template_y;
 	facts.forEach(el => {
-		if (el !== trashcan) el.template = true; //HACK: Mark templates. Should be done at time of putting them into tray or favs.
 		el.x = template_x; el.y = y;
-		for (let attr of types[el.type].children || []) if (!el[attr]) el[attr] = [""]; //should be one-off init
 		draw_at(ctx, el);
 		y += element_path(el).totheight + 10;
 	});
 	actives.forEach(el => el.parent || draw_at(ctx, el));
+	
 }
 repaint();
 
