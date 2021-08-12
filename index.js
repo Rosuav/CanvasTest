@@ -113,19 +113,25 @@ const actives = [
 const favourites = [];
 const trays = {
 	Default: [
-		{type: "text", color: "#77eeee", label: "Create new text message", newlabel: "Sample text message"},
-		{type: "conditional", color: "#7777ee", label: "Create new conditional", newlabel: "If..."},
-		{type: "builtin", color: "#ee77ee", label: "Fetch extra information", newlabel: "TODO -- builtin"},
+		{type: "text", color: "#77eeee", label: "Send text to the channel", newlabel: "Sample text message"},
+		{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"},
 	],
 	Builtins: [
 		{type: "builtin", color: "#ee77ee", label: "Channel uptime"},
 		{type: "builtin", color: "#ee77ee", label: "Shoutout"},
 		{type: "builtin", color: "#ee77ee", label: "Calculator"},
 	],
+	Conditionals: [
+		{type: "conditional", color: "#7777ee", label: "Comparison", newlabel: "If THIS is THAT"},
+		{type: "conditional", color: "#7777ee", label: "Containment", newlabel: "If Needle in Haystack"},
+		{type: "conditional", color: "#7777ee", label: "Numeric calculation", newlabel: "If this isn't zero"},
+		//NOTE: Even though they're internally conditionals too, cooldowns don't belong here
+	],
 };
 const tray_tabs = [
 	{name: "Default", color: "#efdbb2"},
 	{name: "Builtins", color: "#f7bbf7"},
+	{name: "Conditionals", color: "#bbbbf7"},
 ];
 function make_template(el) {
 	el.template = true;
