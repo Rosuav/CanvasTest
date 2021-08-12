@@ -123,7 +123,8 @@ const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
 window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
-const template_x = canvas.width - 205, template_y = 10;
+const trayselect_x = canvas.width - 20; //trayselect_y is the same as the y of the first tray (ie template_y plus height of favs)
+const template_x = trayselect_x - 205, template_y = 10;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
