@@ -136,9 +136,9 @@ const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
 window.set_tray = t => {current_tray = t; refactor(); repaint();} //HACK: Allow manual tray selection
-const tray_x = canvas.width - 15; let tray_y; //tray_y is calculated during repaint
+const tab_width = 15, tab_height = 50;
+const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
-const tab_width = 10, tab_height = 50;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -189,7 +189,7 @@ function repaint() {
 	tray_y = boxed_set(favourites, "#eeffee", "> Drop here to save favourites <", template_y);
 	let spec_y = boxed_set(trays[current_tray], "#efdbb2", "Current tray: " + current_tray, tray_y);
 	//Draw the tabs down the side of the tray
-	let tab_y = tray_y + 10;
+	let tab_y = tray_y + tab_width;
 	ctx.save();
 	//Remove the dividing line. It might still be partly there but this makes the tab look connected.
 	ctx.strokeStyle = "#efdbb2";
