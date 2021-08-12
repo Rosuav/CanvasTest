@@ -162,11 +162,14 @@ function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//SPLITPOINT: Draw facts, then actives
 	let y = template_y;
-	facts.forEach(el => {
+	const render = set => set.forEach(el => {
 		el.x = template_x; el.y = y;
 		draw_at(ctx, el);
 		y += element_path(el).totheight + 10;
 	});
+	render(favourites);
+	render(trays[current_tray]);
+	render(specials);
 	actives.forEach(el => el.parent || draw_at(ctx, el));
 	
 }
