@@ -36,6 +36,12 @@ const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
 
+const arrayify = x => Array.isArray(x) ? x : [x];
+const ensure_blank = arr => {
+	if (arr[arr.length - 1] !== "") arr.push(""); //Ensure the usual empty
+	return arr;
+};
+
 const types = {
 	anchor: {
 		color: "#ffff00", fixed: true, children: ["message"],
@@ -73,11 +79,11 @@ const types = {
 		typedesc: "Perform arithmetic calculations",
 	},
 	conditional: {
-		color: "#7777ee", children: ["message", "otherwise"], label: el => "?? conditional ?? fixme ??",
+		color: "#7777ee", children: ["message", "otherwise"], label: el => ["?? conditional ?? fixme ??", "Otherwise:"],
 		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
 	},
 	cooldown: {
-		color: "#aacc55", children: ["message", "otherwise"], label: el => el.value + "-second cooldown",
+		color: "#aacc55", children: ["message", "otherwise"], label: el => [el.value + "-second cooldown", "If on cooldown:"],
 		valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
 	},
@@ -109,12 +115,13 @@ function element_path(element) {
 	path.lineTo(200, 0);
 	path.lineTo(200, 30);
 	let y = 30;
-	const connections = [];
+	const connections = [], labelpos = [20];
 	if (type.children) for (let i = 0; i < type.children.length; ++i) {
 		if (i) {
 			//For second and subsequent children, add a separator bar and room for a label.
 			path.lineTo(200, y);
 			path.lineTo(200, y += 20);
+			labelpos.push(y - 5);
 		}
 		const childset = element[type.children[i]];
 		if (childset) for (let c = 0; c < childset.length; ++c) {
@@ -133,7 +140,7 @@ function element_path(element) {
 		path.arc(0, 15, 10, Math.PI / 2, Math.PI * 3 / 2, true);
 	}
 	path.closePath();
-	return path_cache[cache_key] = {path, connections, totheight: y};
+	return path_cache[cache_key] = {path, connections, totheight: y, labelpos};
 }
 const actives = [
 	{type: "anchor", x: 10, y: 10, label: "When !foo is typed...", message: [""],
@@ -193,10 +200,10 @@ function draw_at(ctx, el, parent, reposition) {
 	ctx.fill(path.path);
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
-	let desc = type.fixed ? "" : "⣿ ";
-	if (el.template) desc = "⯇ ";
-	desc += type.label(el);
-	ctx.fillText(desc, 20, 20, 175);
+	const labels = arrayify(type.label(el));
+	if (el.template) labels[0] = "⯇ " + labels[0];
+	else if (!type.fixed) labels[0] = "⣿ " + labels[0];
+	for (let i = 0; i < labels.length; ++i) ctx.fillText(labels[i].slice(0, 28), 20, path.labelpos[i], 175);
 	ctx.stroke(path.path);
 	ctx.restore();
 	const children = type.children || [];
@@ -465,12 +472,6 @@ on("submit", "#setprops", e => {
 	e.match.closest("dialog").close();
 	repaint();
 });
-
-const arrayify = x => Array.isArray(x) ? x : [x];
-const ensure_blank = arr => {
-	if (arr[arr.length - 1] !== "") arr.push(""); //Ensure the usual empty
-	return arr;
-};
 
 function element_to_message(el) {
 	if (el === "") return "";
