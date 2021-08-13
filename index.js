@@ -78,9 +78,25 @@ const types = {
 		flag: "builtin", values: "calc",
 		typedesc: "Perform arithmetic calculations",
 	},
-	conditional: {
-		color: "#7777ee", children: ["message", "otherwise"], label: el => ["?? conditional ?? fixme ??", "Otherwise:"],
-		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
+	conditional_string: {
+		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
+		flag: "conditional", values: "string",
+		typedesc: "Make a decision - if THIS is THAT, do one thing, otherwise do something else.",
+	},
+	conditional_contains: {
+		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String includes", "Otherwise:"],
+		flag: "conditional", values: "contains",
+		typedesc: "Make a decision - if Needle in Haystack, do one thing, otherwise do something else.",
+	},
+	conditional_regexp: {
+		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Regular expression", "Otherwise:"],
+		flag: "conditional", values: "regexp",
+		typedesc: "Make a decision - if regular expression, do one thing, otherwise do something else.",
+	},
+	conditional_number: {
+		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Numeric computation", "Otherwise:"],
+		flag: "conditional", values: "number",
+		typedesc: "Make a decision - if the result's nonzero, do one thing, otherwise do something else.",
 	},
 	cooldown: {
 		color: "#aacc55", children: ["message", "otherwise"], label: el => [el.value + "-second cooldown", "If on cooldown:"],
@@ -161,9 +177,9 @@ const trays = {
 		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
 	],
 	Conditionals: [
-		{type: "conditional", label: "Comparison"}, //TODO.
-		{type: "conditional", label: "Containment"},
-		{type: "conditional", label: "Numeric calculation"},
+		{type: "conditional_string"},
+		{type: "conditional_contains"},
+		{type: "conditional_number"},
 		//NOTE: Even though they're internally conditionals too, cooldowns don't belong here
 	],
 };
