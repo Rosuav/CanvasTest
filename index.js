@@ -460,3 +460,12 @@ on("submit", "#setprops", e => {
 	e.match.closest("dialog").close();
 	repaint();
 });
+
+on("click", "#open_json", e => {
+	DOM("#jsondlg").showModal();
+});
+
+on("submit", "#jsondlg form", e => {
+	console.log("TODO: Load JSON into elements");
+	e.match.closest("dialog").close();
+});
