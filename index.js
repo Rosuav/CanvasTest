@@ -9,6 +9,7 @@
 * Saving of favourites. ??? WHERE???
 * Builtins need params
 * Builtins (and some anchor types) provide replaceable values.
+* Favs with children push or cross the edge of the box - functional but ugly. Collapse them??
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
@@ -26,7 +27,7 @@ import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/
 const {LABEL, INPUT, SELECT, OPTION} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
-const FAVOURITES_ATTRIBUTES = "type label color".split(" "); //Saveable attributes of favourites
+const FAVOURITES_ATTRIBUTES = "type color".split(" "); //Saveable attributes of favourites (plus children, based on the type)
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
@@ -184,10 +185,18 @@ const tray_tabs = [
 	{name: "Builtins", color: "#f7bbf7"},
 	{name: "Conditionals", color: "#bbbbf7"},
 ];
-function make_template(el) {
+function make_template(el, par) {
+	if (el === "") return;
+	//Remove this element from actives if present. Note that this is quite inefficient
+	//on recursive templates, but I don't really care.
+	const idx = actives.indexOf(el);
+	if (idx !== -1) actives.splice(idx, 1);
 	el.template = true;
-	for (let attr of types[el.type].children || []) el[attr] = [""];
-	return el; //For ease of adding into favs
+	if (par && el.parent) el.parent[0] = par;
+	for (let attr of types[el.type].children || []) {
+		if (!el[attr]) el[attr] = [""];
+		else el[attr].forEach(e => make_template(e, el));
+	}
 }
 Object.values(trays).forEach(t => t.forEach(e => make_template(e)));
 let current_tray = "Default";
@@ -312,6 +321,17 @@ function element_at_position(x, y, filter) {
 	}
 }
 
+function clone_template(t, par) {
+	if (t === "") return "";
+	const el = {...t};
+	delete el.template;
+	actives.push(el);
+	if (par && el.parent) el.parent[0] = par;
+	for (let attr of types[el.type].children || [])
+		el[attr] = el[attr].map(e => clone_template(e, el));
+	return el;
+}
+
 let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
@@ -331,9 +351,8 @@ canvas.addEventListener("pointerdown", e => {
 	e.target.setPointerCapture(e.pointerId);
 	if (el.template) {
 		//Clone and spawn.
-		el = {...el, template: false, fresh: true};
-		for (let attr of types[el.type].children || []) el[attr] = [""];
-		actives.push(el);
+		el = clone_template(el);
+		el.fresh = true;
 		refactor();
 	}
 	dragging = el; dragbasex = e.offsetX - el.x; dragbasey = e.offsetY - el.y;
@@ -379,6 +398,21 @@ canvas.addEventListener("pointermove", e => {
 	repaint();
 });
 
+//Check if two templates are functionally equivalent, based on saveable attributes
+function same_template(t1, t2) {
+	if (t1 === "" && t2 === "") return true;
+	if (t1 === "" || t2 === "") return false;
+	for (let a of FAVOURITES_ATTRIBUTES)
+		if (t1[a] !== t2[a]) return false;
+	for (let attr of types[t1.type].children || []) {
+		const c1 = t1[attr], c2 = t2[attr];
+		if (c1.length !== c2.length) return false;
+		for (let i = 0; i < c1.length; ++i)
+			if (!same_template(c1[i], c2[i])) return false;
+	}
+	return true;
+}
+
 canvas.addEventListener("pointerup", e => {
 	if (!dragging) return;
 	e.target.releasePointerCapture(e.pointerId);
@@ -400,15 +434,15 @@ canvas.addEventListener("pointerup", e => {
 			//They all function the same way, though: remove the Active, add to Favourites,
 			//but deduplicate against all other Favourites.
 			let dupe = false;
+			make_template(dragging);
 			for (let f of favourites) {
-				let same = true;
-				for (let a of FAVOURITES_ATTRIBUTES)
-					if (f[a] !== dragging[a]) {same = false; break;}
-				if (same) {dupe = true; break;}
+				if (same_template(f, dragging)) {dupe = true; break;}
 			}
 			if (!dupe) //In Python, this would be a for-else clause
-				favourites.push(make_template({...dragging}));
-			dragging.fresh = true; //Force it to be discarded
+				favourites.push(dragging);
+			refactor();
+			dragging = null; repaint();
+			return;
 		}
 		if (dragging.fresh) {
 			//It's been picked up off the template but never dropped. Just discard it.
