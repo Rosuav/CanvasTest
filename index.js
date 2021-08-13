@@ -7,6 +7,8 @@
 * Conditionals are stubbed out - need their 1-2 values
   - Need to know somehow which ones have 1 and which have 2
 * Saving of favourites. ??? WHERE???
+* Builtins need params
+* Builtins (and some anchor types) provide replaceable values.
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
