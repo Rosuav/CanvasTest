@@ -1,17 +1,9 @@
 /* TODO
 
-* Export to JSON
-* Load from JSON
-  - For complex components, process them in the same order that connection.pike will.
-    - If it has a delay, render a delay component, then erase the delay and render the rest as a child.
-    - If it has a voice, ditto (or that might be paint)
-      - Does StilleBot have a way to reset to default voice inside a subtree??
-    - Destination, Builtin, Conditional, Destination
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
 * Templates with children - good for favs, maybe also for example cooldown usage?
-* Make labels *always* fixed (or cosmetic-only), and have the function receive the whole element.
 * flag now s/be "attr"?
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
