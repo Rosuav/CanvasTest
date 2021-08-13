@@ -11,6 +11,8 @@
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
 * Templates with children - good for favs, maybe also for example cooldown usage?
+* Make labels *always* fixed (or cosmetic-only), and have the function receive the whole element.
+* flag now s/be "attr"?
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
@@ -39,7 +41,7 @@ const types = {
 		fixed: true, children: ["message"], labelfixed: true,
 	},
 	text: {
-		labellabel: "Text",
+		valuelabel: "Text", flag: "message", labelfixed: val => val,
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 	//Types that apply some sort of flag to a message. Each one needs a flag name, and a set of values.
@@ -130,8 +132,8 @@ const actives = [
 const favourites = [];
 const trays = {
 	Default: [
-		{type: "text", color: "#77eeee", label: "Send text to the channel", newlabel: "Sample text message"},
-		//{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"}, //TODO
+		{type: "text", color: "#77eeee", label: "Send text to the channel", value: "Sample text message"},
+		//{type: "text", color: "#77eeee", label: "Whisper to the caller", value: "Shh this is a whisper"}, //TODO
 		{type: "delay", color: "#77ee77", label: "Delay", value: "2"},
 		{type: "random", color: "#ee7777", label: "Randomize"},
 		{type: "cooldown", color: "#aacc55", label: "Cooldown", value: "30"},
@@ -436,7 +438,7 @@ canvas.addEventListener("dblclick", e => {
 			]));
 		}
 		break;
-		case "undefined": set_content("#valueholder", LABEL([type.valuelabel + ": ", INPUT({name: "value", value: el.value})])); break;
+		case "undefined": set_content("#valueholder", LABEL([type.valuelabel + ": ", INPUT({name: "value", value: el.value, size: 50})])); break;
 		default: set_content("#valueholder", ""); break; //incl fixed strings
 	}
 	else set_content("#valueholder", "");
@@ -461,7 +463,25 @@ on("submit", "#setprops", e => {
 	repaint();
 });
 
+function element_to_json(el) {
+	if (el === "") return "";
+	const ret = { };
+	const type = types[el.type];
+	if (type.children) for (let attr of type.children) {
+		ret[attr] = el[attr].filter(e => e !== "").map(element_to_json);
+	}
+	if (type.flag) ret[type.flag] = el.value;
+	if (el.builtin) ret.builtin = el.builtin;
+	if (el.builtin_param) ret.builtin = el.builtin_param;
+	return ret;
+}
+
 on("click", "#open_json", e => {
+	//Starting at the anchor, recursively calculate an echoable message which will create
+	//the desired effect.
+	//assert actives[0].type === "anchor"
+	const json = element_to_json(actives[0]);
+	DOM("#jsontext").value = JSON.stringify(json);
 	DOM("#jsondlg").showModal();
 });
 
