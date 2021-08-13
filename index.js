@@ -23,7 +23,8 @@ There will always be an anchor whose text (and possibly colour) will be determin
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
 */
-import {on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
+import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
+const {LABEL, INPUT, SELECT, OPTION} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
 const FAVOURITES_ATTRIBUTES = "type label color".split(" "); //Saveable attributes of favourites
@@ -40,21 +41,36 @@ const types = {
 		labellabel: "Text",
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
-	flags: {
-		//Generic type that applies some sort of flag. Needs a label, a flag, and a value.
-		children: ["message"],
-		labellabel: "Effect", labelfixed: true,
-		typedesc: "Apply some sort of change to the messages within it",
+	//Types that apply some sort of flag to a message. Each one needs a flag name, and a set of values.
+	//The values can be provided as an array of strings (take your pick), a single string (fixed value,
+	//cannot change), undefined (allow user to type), or an array of three numbers [min, max, step],
+	//which define a range of numeric values.
+	//Ideally, also provide a labellabel and a typedesc.
+	//These will be detected in the order they are iterated over.
+	//TODO: Which things should be elements and which should be paint??
+	//Paint's job is to reduce the size of the visible tree. If we don't have any paint, this tree will
+	//be *larger* than the one in the vanilla editor, since each element can apply at most one attribute
+	//(although it might still be clearer, in complicated cases where evaluation order matters). But
+	//what makes some things work better as paint and others as elements?
+	delay: {
+		children: ["message"], labelfixed: true,
+		flag: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
+		typedesc: "Delay the children by a certain length of time",
 	},
 	builtin: {
-		children: ["message"],
-		labellabel: "Source", labelfixed: true,
+		children: ["message"], labelfixed: true,
+		labellabel: "Source",
 		typedesc: "Fetch extra information. TODO: Show the precise extra info for this builtin.",
 	},
 	conditional: {
 		children: ["message", "otherwise"],
 		labellabel: "Condition",
 		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
+	},
+	random: {
+		children: ["message"], labelfixed: true,
+		flag: "mode", valuelabel: "Randomize", values: "random",
+		typedesc: "Choose one child at random and show it",
 	},
 };
 
@@ -110,8 +126,8 @@ const trays = {
 	Default: [
 		{type: "text", color: "#77eeee", label: "Send text to the channel", newlabel: "Sample text message"},
 		{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"},
-		{type: "flags", color: "#77ee77", label: "Delay", newlabel: "Wait 2 seconds", flag: "delay", value: 2},
-		{type: "flags", color: "#ee7777", label: "Randomize", newlabel: "Random message", flag: "mode", value: "random"},
+		{type: "delay", color: "#77ee77", label: "Delay", value: "2"},
+		{type: "random", color: "#ee7777", label: "Randomize"},
 	],
 	Builtins: [
 		{type: "builtin", color: "#ee77ee", label: "Channel uptime"},
@@ -393,10 +409,28 @@ canvas.addEventListener("dblclick", e => {
 	if (el.template) return; //TODO: Pop up some info w/o allowing changes
 	propedit = el;
 	const type = types[el.type];
-	set_content("#labellabel", type.labellabel || el.labellabel);
+	set_content("#labellabel", type.labellabel || el.labellabel || "Label");
 	set_content("#typedesc", type.typedesc || el.desc);
 	DOM("[name=label]").value = el.label;
 	DOM("[name=label]").disabled = type.labelfixed;
+	if (type.valuelabel) switch (typeof type.values) {
+		//"object" has to mean array, we don't support any other type
+		case "object": if (type.values.length === 3 && typeof type.values[0] === "number") {
+			set_content("#valueholder", LABEL([
+				type.valuelabel + ": ",
+				INPUT({name: "value", type: "number", min: type.values[0], max: type.values[1], step: type.values[2], value: el.value}),
+			]));
+		} else {
+			set_content("#valueholder", LABEL([
+				type.valuelabel + ": ",
+				SELECT({name: "value"}, type.values.map(v => OPTION(v))), //TODO: Allow value and description to differ
+			]));
+		}
+		break;
+		case "undefined": set_content("#valueholder", LABEL([type.valuelabel + ": ", INPUT({name: "value", value: el.value})])); break;
+		default: set_content("#valueholder", ""); break; //incl fixed strings
+	}
+	else set_content("#valueholder", "");
 	set_content("#properties form button", "Close");
 	DOM("#properties").showModal();
 });
@@ -406,6 +440,12 @@ on("input", "#properties input", e => set_content("#properties form button", "Ap
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
 	if (!type.labelfixed) propedit.label = DOM("[name=label]").value;
+	const val = DOM("[name=value]");
+	if (val) {
+		//TODO: Validate based on the type, to prevent junk data from hanging around until save
+		//Ultimately the server will validate, but it's ugly to let it sit around wrong.
+		propedit.value = val.value;
+	}
 	propedit = null;
 	e.match.closest("dialog").close();
 	repaint();
