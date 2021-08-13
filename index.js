@@ -4,7 +4,6 @@
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
 * Templates with children - good for favs, maybe also for example cooldown usage?
-* flag now s/be "attr"?
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
@@ -39,7 +38,7 @@ const types = {
 		color: "#ffff00", fixed: true, children: ["message"],
 		label: el => el.label,
 	},
-	//Types that apply some sort of flag to a message. Each one needs a flag name, and a set of values.
+	//Types can apply attributes to a message. Each one needs an attribute name and a set of values.
 	//The values can be provided as an array of strings (take your pick), a single string (fixed value,
 	//cannot change), undefined (allow user to type), or an array of three numbers [min, max, step],
 	//which define a range of numeric values.
@@ -52,42 +51,42 @@ const types = {
 	//what makes some things work better as paint and others as elements?
 	delay: {
 		color: "#77ee77", children: ["message"], label: el => `Delay ${el.value} seconds`,
-		flag: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
+		attr: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Delay the children by a certain length of time",
 	},
 	builtin_uptime: {
 		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
-		flag: "builtin", values: "uptime",
+		attr: "builtin", values: "uptime",
 		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
 	},
 	builtin_shoutout: {
 		color: "#ee77ee", children: ["message"], label: el => "Shoutout",
-		flag: "builtin", values: "shoutout",
+		attr: "builtin", values: "shoutout",
 		typedesc: "Fetch information about another channel and what it has recently streamed",
 	},
 	builtin_calc: {
 		color: "#ee77ee", children: ["message"], label: el => "Calculator",
-		flag: "builtin", values: "calc",
+		attr: "builtin", values: "calc",
 		typedesc: "Perform arithmetic calculations",
 	},
 	conditional_string: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
-		flag: "conditional", values: "string",
+		attr: "conditional", values: "string",
 		typedesc: "Make a decision - if THIS is THAT, do one thing, otherwise do something else.",
 	},
 	conditional_contains: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String includes", "Otherwise:"],
-		flag: "conditional", values: "contains",
+		attr: "conditional", values: "contains",
 		typedesc: "Make a decision - if Needle in Haystack, do one thing, otherwise do something else.",
 	},
 	conditional_regexp: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Regular expression", "Otherwise:"],
-		flag: "conditional", values: "regexp",
+		attr: "conditional", values: "regexp",
 		typedesc: "Make a decision - if regular expression, do one thing, otherwise do something else.",
 	},
 	conditional_number: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Numeric computation", "Otherwise:"],
-		flag: "conditional", values: "number",
+		attr: "conditional", values: "number",
 		typedesc: "Make a decision - if the result's nonzero, do one thing, otherwise do something else.",
 	},
 	cooldown: {
@@ -97,11 +96,11 @@ const types = {
 	},
 	random: {
 		color: "#ee7777", children: ["message"], label: el => "Randomize",
-		flag: "mode", valuelabel: "Randomize", values: "random",
+		attr: "mode", valuelabel: "Randomize", values: "random",
 		typedesc: "Choose one child at random and show it",
 	},
 	text: {
-		color: "#77eeee", valuelabel: "Text", flag: "message", label: el => el.value,
+		color: "#77eeee", valuelabel: "Text", attr: "message", label: el => el.value,
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 };
@@ -488,7 +487,7 @@ function element_to_message(el) {
 	if (type.children) for (let attr of type.children) {
 		ret[attr] = el[attr].filter(e => e !== "").map(element_to_message);
 	}
-	if (type.flag) ret[type.flag] = el.value;
+	if (type.attr) ret[type.attr] = el.value;
 	if (el.builtin) ret.builtin = el.builtin;
 	if (el.builtin_param) ret.builtin = el.builtin_param;
 	return ret;
@@ -500,8 +499,8 @@ function message_to_element(msg) {
 	if (Array.isArray(msg)) return msg.map(message_to_element);
 	for (let typename in types) {
 		const type = types[typename];
-		if (type.flag && msg[type.flag]) {
-			const val = msg[type.flag];
+		if (type.attr && msg[type.attr]) {
+			const val = msg[type.attr];
 			let matches = false;
 			//See if the value is compatible with this type's definition of values.
 			switch (typeof type.values) {
@@ -520,7 +519,7 @@ function message_to_element(msg) {
 			}
 			if (matches) {
 				const el = new_elem({type: typename, value: val});
-				delete msg[type.flag];
+				delete msg[type.attr];
 				if (type.children) for (let attr of type.children) {
 					el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
 					el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
