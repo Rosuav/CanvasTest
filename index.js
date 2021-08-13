@@ -125,7 +125,7 @@ const favourites = [];
 const trays = {
 	Default: [
 		{type: "text", color: "#77eeee", label: "Send text to the channel", newlabel: "Sample text message"},
-		{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"},
+		//{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"}, //TODO
 		{type: "delay", color: "#77ee77", label: "Delay", value: "2"},
 		{type: "random", color: "#ee7777", label: "Randomize"},
 	],
