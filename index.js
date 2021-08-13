@@ -130,9 +130,9 @@ const trays = {
 		{type: "random", color: "#ee7777", label: "Randomize"},
 	],
 	Builtins: [
-		{type: "builtin", color: "#ee77ee", label: "Channel uptime"},
-		{type: "builtin", color: "#ee77ee", label: "Shoutout"},
-		{type: "builtin", color: "#ee77ee", label: "Calculator"},
+		{type: "builtin", color: "#ee77ee", label: "Channel uptime", builtin: "uptime"},
+		{type: "builtin", color: "#ee77ee", label: "Shoutout", builtin: "shoutout", builtin_param: "%s"},
+		{type: "builtin", color: "#ee77ee", label: "Calculator", builtin: "calc", builtin_param: "1 + 2 + 3"},
 	],
 	Conditionals: [
 		{type: "conditional", color: "#7777ee", label: "Comparison", newlabel: "If THIS is THAT"},
