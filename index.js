@@ -40,10 +40,6 @@ const types = {
 	anchor: {
 		fixed: true, children: ["message"], labelfixed: true,
 	},
-	text: {
-		valuelabel: "Text", flag: "message", labelfixed: val => val,
-		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
-	},
 	//Types that apply some sort of flag to a message. Each one needs a flag name, and a set of values.
 	//The values can be provided as an array of strings (take your pick), a single string (fixed value,
 	//cannot change), undefined (allow user to type), or an array of three numbers [min, max, step],
@@ -60,10 +56,20 @@ const types = {
 		flag: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Delay the children by a certain length of time",
 	},
-	builtin: {
+	builtin_uptime: {
 		children: ["message"], labelfixed: true,
-		labellabel: "Source",
-		typedesc: "Fetch extra information. TODO: Show the precise extra info for this builtin.",
+		flag: "builtin", values: "uptime",
+		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
+	},
+	builtin_shoutout: {
+		children: ["message"], labelfixed: true,
+		flag: "builtin", values: "shoutout",
+		typedesc: "Fetch information about another channel and what it has recently streamed",
+	},
+	builtin_calc: {
+		children: ["message"], labelfixed: true,
+		flag: "builtin", values: "calc",
+		typedesc: "Perform arithmetic calculations",
 	},
 	conditional: {
 		children: ["message", "otherwise"],
@@ -79,6 +85,10 @@ const types = {
 		children: ["message"], labelfixed: true,
 		flag: "mode", valuelabel: "Randomize", values: "random",
 		typedesc: "Choose one child at random and show it",
+	},
+	text: {
+		valuelabel: "Text", flag: "message", labelfixed: val => val,
+		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 };
 
@@ -139,9 +149,9 @@ const trays = {
 		{type: "cooldown", color: "#aacc55", label: "Cooldown", value: "30"},
 	],
 	Builtins: [
-		{type: "builtin", color: "#ee77ee", label: "Channel uptime", builtin: "uptime"},
-		{type: "builtin", color: "#ee77ee", label: "Shoutout", builtin: "shoutout", builtin_param: "%s"},
-		{type: "builtin", color: "#ee77ee", label: "Calculator", builtin: "calc", builtin_param: "1 + 2 + 3"},
+		{type: "builtin_uptime", color: "#ee77ee", label: "Channel uptime"},
+		{type: "builtin_shoutout", color: "#ee77ee", label: "Shoutout", builtin_param: "%s"},
+		{type: "builtin_calc", color: "#ee77ee", label: "Calculator", builtin_param: "1 + 2 + 3"},
 	],
 	Conditionals: [
 		{type: "conditional", color: "#7777ee", label: "Comparison", newlabel: "If THIS is THAT"},
@@ -463,12 +473,12 @@ on("submit", "#setprops", e => {
 	repaint();
 });
 
-function element_to_json(el) {
+function element_to_message(el) {
 	if (el === "") return "";
 	const ret = { };
 	const type = types[el.type];
 	if (type.children) for (let attr of type.children) {
-		ret[attr] = el[attr].filter(e => e !== "").map(element_to_json);
+		ret[attr] = el[attr].filter(e => e !== "").map(element_to_message);
 	}
 	if (type.flag) ret[type.flag] = el.value;
 	if (el.builtin) ret.builtin = el.builtin;
@@ -476,16 +486,60 @@ function element_to_json(el) {
 	return ret;
 }
 
+function message_to_element(msg) {
+	if (typeof msg === "string") return {type: "text", color: "#77eeee", label: msg, value: msg};
+	if (Array.isArray(msg)) return msg.map(message_to_element);
+	for (let typename in types) {
+		const type = types[typename];
+		if (type.flag && msg[type.flag]) {
+			const val = msg[type.flag];
+			let matches = false;
+			//See if the value is compatible with this type's definition of values.
+			switch (typeof type.values) {
+				//"object" has to mean array, we don't support any other type
+				case "object": if (type.values.length === 3 && typeof type.values[0] === "number") {
+					const num = parseFloat(val);
+					const [min, max, step] = type.values;
+					if (num >= min && min <= max && !((num - min) % step)) matches = true;
+				} else {
+					matches = type.values.includes(val);
+				}
+				break;
+				case "undefined": matches = true; break;
+				case "string": matches = type.values === val; break;
+				default: matches = false; break;
+			}
+			if (matches) {
+				const el = {type: typename, color: type.color || "#c0ffee", value: val, label: typename};
+				if (typeof type.labelfixed === "function") el.label = type.labelfixed(val);
+				delete msg[type.flag];
+				if (type.children) for (let attr of type.children) {
+					if (!Array.isArray(msg[attr])) msg[attr] = [msg[attr]];
+					el[attr] = msg[attr].map(message_to_element);
+					if (el[attr][el[attr].length - 1] !== "") el[attr].push(""); //Ensure the usual empty
+				}
+				return el;
+			}
+		}
+	}
+	if (msg.message) return message_to_element(msg.message);
+	return {type: "text", color: "#77eeee", label: "Shouldn't happen", value: "Shouldn't happen"};
+}
+
 on("click", "#open_json", e => {
 	//Starting at the anchor, recursively calculate an echoable message which will create
 	//the desired effect.
 	//assert actives[0].type === "anchor"
-	const json = element_to_json(actives[0]);
-	DOM("#jsontext").value = JSON.stringify(json);
+	const msg = element_to_message(actives[0]);
+	DOM("#jsontext").value = JSON.stringify(msg);
 	DOM("#jsondlg").showModal();
 });
 
 on("submit", "#jsondlg form", e => {
-	console.log("TODO: Load JSON into elements");
+	const msg = JSON.parse(DOM("#jsontext").value);
+	const el = message_to_element(msg);
+	actives.splice(1); //Truncate
+	actives[0].message = Array.isArray(el) ? el : [el];
 	e.match.closest("dialog").close();
+	refactor(); repaint();
 });
