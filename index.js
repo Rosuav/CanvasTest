@@ -191,7 +191,7 @@ function make_template(el) {
 }
 Object.values(trays).forEach(t => t.forEach(e => make_template(e)));
 let current_tray = "Default";
-const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""],
+const trashcan = {type: "anchor", color: "#999999", label: "Trash - drop here to discard", message: [""],
 	desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
@@ -284,7 +284,7 @@ function repaint() {
 		ctx.stroke(traytab_path);
 		ctx.restore();
 	}
-	render(specials, spec_y);
+	render(specials, spec_y + 25);
 	actives.forEach(el => el.parent || draw_at(ctx, el));
 }
 repaint();
