@@ -486,8 +486,9 @@ function element_to_message(el) {
 	return ret;
 }
 
+const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to array here than to collect them afterwards
 function message_to_element(msg) {
-	if (typeof msg === "string") return {type: "text", label: msg, value: msg};
+	if (typeof msg === "string") return new_elem({type: "text", label: msg, value: msg});
 	if (Array.isArray(msg)) return msg.map(message_to_element);
 	for (let typename in types) {
 		const type = types[typename];
@@ -510,19 +511,18 @@ function message_to_element(msg) {
 				default: matches = false; break;
 			}
 			if (matches) {
-				const el = {type: typename, value: val};
+				const el = new_elem({type: typename, value: val});
 				delete msg[type.flag];
 				if (type.children) for (let attr of type.children) {
 					el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
 					el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
 				}
-				actives.push(el); //HACK: Easier to add to array here than to collect them afterwards
 				return el;
 			}
 		}
 	}
 	if (msg.message) return message_to_element(msg.message);
-	return {type: "text", color: "#ff0000", label: "Shouldn't happen", value: "Shouldn't happen"};
+	return new_elem({type: "text", color: "#ff0000", label: "Shouldn't happen", value: "Shouldn't happen"});
 }
 
 on("click", "#open_json", e => {
