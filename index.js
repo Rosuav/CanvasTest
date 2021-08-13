@@ -38,13 +38,14 @@ const ctx = canvas.getContext('2d');
 
 const types = {
 	anchor: {
-		color: "#ffff00", fixed: true, children: ["message"], labelfixed: true,
+		color: "#ffff00", fixed: true, children: ["message"],
+		label: el => el.label,
 	},
 	//Types that apply some sort of flag to a message. Each one needs a flag name, and a set of values.
 	//The values can be provided as an array of strings (take your pick), a single string (fixed value,
 	//cannot change), undefined (allow user to type), or an array of three numbers [min, max, step],
 	//which define a range of numeric values.
-	//Ideally, also provide a labellabel and a typedesc.
+	//Ideally, also provide a typedesc.
 	//These will be detected in the order they are iterated over.
 	//TODO: Which things should be elements and which should be paint??
 	//Paint's job is to reduce the size of the visible tree. If we don't have any paint, this tree will
@@ -52,42 +53,41 @@ const types = {
 	//(although it might still be clearer, in complicated cases where evaluation order matters). But
 	//what makes some things work better as paint and others as elements?
 	delay: {
-		color: "#77ee77", children: ["message"], labelfixed: val => `Delay ${val} seconds`,
+		color: "#77ee77", children: ["message"], label: el => `Delay ${el.value} seconds`,
 		flag: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Delay the children by a certain length of time",
 	},
 	builtin_uptime: {
-		color: "#ee77ee", children: ["message"], labelfixed: true,
+		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
 		flag: "builtin", values: "uptime",
 		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
 	},
 	builtin_shoutout: {
-		color: "#ee77ee", children: ["message"], labelfixed: true,
+		color: "#ee77ee", children: ["message"], label: el => "Shoutout",
 		flag: "builtin", values: "shoutout",
 		typedesc: "Fetch information about another channel and what it has recently streamed",
 	},
 	builtin_calc: {
-		color: "#ee77ee", children: ["message"], labelfixed: true,
+		color: "#ee77ee", children: ["message"], label: el => "Calculator",
 		flag: "builtin", values: "calc",
 		typedesc: "Perform arithmetic calculations",
 	},
 	conditional: {
-		color: "#7777ee", children: ["message", "otherwise"],
-		labellabel: "Condition",
+		color: "#7777ee", children: ["message", "otherwise"], label: el => "?? conditional ?? fixme ??",
 		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
 	},
 	cooldown: {
-		color: "#aacc55", children: ["message", "otherwise"], labelfixed: val => val + "-second cooldown",
+		color: "#aacc55", children: ["message", "otherwise"], label: el => el.value + "-second cooldown",
 		valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
 	},
 	random: {
-		color: "#ee7777", children: ["message"], labelfixed: true,
+		color: "#ee7777", children: ["message"], label: el => "Randomize",
 		flag: "mode", valuelabel: "Randomize", values: "random",
 		typedesc: "Choose one child at random and show it",
 	},
 	text: {
-		color: "#77eeee", valuelabel: "Text", flag: "message", labelfixed: val => val,
+		color: "#77eeee", valuelabel: "Text", flag: "message", label: el => el.value,
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 };
@@ -137,7 +137,7 @@ function element_path(element) {
 }
 const actives = [
 	{type: "anchor", x: 10, y: 10, label: "When !foo is typed...", message: [""],
-		labellabel: "Invocation", desc: "This is how everything starts. You can't change this."},
+		desc: "This is how everything starts. You can't change this."},
 ];
 const favourites = [];
 const trays = {
@@ -173,7 +173,7 @@ function make_template(el) {
 Object.values(trays).forEach(t => t.forEach(e => make_template(e)));
 let current_tray = "Default";
 const trashcan = {type: "anchor", color: "#999999", label: "Trash", message: [""],
-	labellabel: "Trash can", desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
+	desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
@@ -306,17 +306,16 @@ canvas.addEventListener("pointerdown", e => {
 		}
 		return;
 	}
-	e.target.setPointerCapture(e.pointerId);
 	dragging = null;
 	let el = element_at_position(e.offsetX, e.offsetY, el => !types[el.type].fixed);
 	if (!el) return;
+	e.target.setPointerCapture(e.pointerId);
 	if (el.template) {
 		//Clone and spawn.
 		el = {...el, template: false, label: el.newlabel || el.label, fresh: true};
 		if (el.newlabel) delete el.newlabel;
 		for (let attr of types[el.type].children || []) el[attr] = [""];
-		const labelfixed = types[el.type].labelfixed;
-		if (typeof labelfixed === "function") el.label = labelfixed(el.value);
+		el.label = types[el.type].label(el);
 		actives.push(el);
 		refactor();
 	}
@@ -431,10 +430,7 @@ canvas.addEventListener("dblclick", e => {
 	if (el.template) return; //TODO: Pop up some info w/o allowing changes
 	propedit = el;
 	const type = types[el.type];
-	set_content("#labellabel", type.labellabel || el.labellabel || "Label");
 	set_content("#typedesc", type.typedesc || el.desc);
-	DOM("[name=label]").value = el.label;
-	DOM("[name=label]").disabled = !!type.labelfixed;
 	if (type.valuelabel) switch (typeof type.values) {
 		//"object" has to mean array, we don't support any other type
 		case "object": if (type.values.length === 3 && typeof type.values[0] === "number") {
@@ -467,12 +463,17 @@ on("submit", "#setprops", e => {
 		//Ultimately the server will validate, but it's ugly to let it sit around wrong.
 		propedit.value = val.value;
 	}
-	if (!type.labelfixed) propedit.label = DOM("[name=label]").value;
-	else if (typeof type.labelfixed === "function") propedit.label = type.labelfixed(propedit.value);
+	propedit.label = type.label(propedit);
 	propedit = null;
 	e.match.closest("dialog").close();
 	repaint();
 });
+
+const arrayify = x => Array.isArray(x) ? x : [x];
+const ensure_blank = arr => {
+	if (arr[arr.length - 1] !== "") arr.push(""); //Ensure the usual empty
+	return arr;
+};
 
 function element_to_message(el) {
 	if (el === "") return "";
@@ -512,13 +513,13 @@ function message_to_element(msg) {
 			}
 			if (matches) {
 				const el = {type: typename, value: val, label: typename};
-				if (typeof type.labelfixed === "function") el.label = type.labelfixed(val);
 				delete msg[type.flag];
 				if (type.children) for (let attr of type.children) {
-					if (!Array.isArray(msg[attr])) msg[attr] = [msg[attr]];
-					el[attr] = msg[attr].map(message_to_element);
-					if (el[attr][el[attr].length - 1] !== "") el[attr].push(""); //Ensure the usual empty
+					el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
+					el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
 				}
+				el.label = type.label(el);
+				actives.push(el); //HACK: Easier to add to array here than to collect them afterwards
 				return el;
 			}
 		}
@@ -538,9 +539,11 @@ on("click", "#open_json", e => {
 
 on("submit", "#jsondlg form", e => {
 	const msg = JSON.parse(DOM("#jsontext").value);
-	const el = message_to_element(msg);
 	actives.splice(1); //Truncate
-	actives[0].message = Array.isArray(el) ? el : [el];
+	const el = message_to_element(msg);
+	actives[0].message = ensure_blank(arrayify(el));
+	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
 	e.match.closest("dialog").close();
+	console.log(actives);
 	refactor(); repaint();
 });
