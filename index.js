@@ -38,7 +38,7 @@ const ctx = canvas.getContext('2d');
 
 const types = {
 	anchor: {
-		fixed: true, children: ["message"], labelfixed: true,
+		color: "#ffff00", fixed: true, children: ["message"], labelfixed: true,
 	},
 	//Types that apply some sort of flag to a message. Each one needs a flag name, and a set of values.
 	//The values can be provided as an array of strings (take your pick), a single string (fixed value,
@@ -52,42 +52,42 @@ const types = {
 	//(although it might still be clearer, in complicated cases where evaluation order matters). But
 	//what makes some things work better as paint and others as elements?
 	delay: {
-		children: ["message"], labelfixed: val => `Delay ${val} seconds`,
+		color: "#77ee77", children: ["message"], labelfixed: val => `Delay ${val} seconds`,
 		flag: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Delay the children by a certain length of time",
 	},
 	builtin_uptime: {
-		children: ["message"], labelfixed: true,
+		color: "#ee77ee", children: ["message"], labelfixed: true,
 		flag: "builtin", values: "uptime",
 		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
 	},
 	builtin_shoutout: {
-		children: ["message"], labelfixed: true,
+		color: "#ee77ee", children: ["message"], labelfixed: true,
 		flag: "builtin", values: "shoutout",
 		typedesc: "Fetch information about another channel and what it has recently streamed",
 	},
 	builtin_calc: {
-		children: ["message"], labelfixed: true,
+		color: "#ee77ee", children: ["message"], labelfixed: true,
 		flag: "builtin", values: "calc",
 		typedesc: "Perform arithmetic calculations",
 	},
 	conditional: {
-		children: ["message", "otherwise"],
+		color: "#7777ee", children: ["message", "otherwise"],
 		labellabel: "Condition",
 		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
 	},
 	cooldown: {
-		children: ["message", "otherwise"], labelfixed: val => val + "-second cooldown",
+		color: "#aacc55", children: ["message", "otherwise"], labelfixed: val => val + "-second cooldown",
 		valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
 	},
 	random: {
-		children: ["message"], labelfixed: true,
+		color: "#ee7777", children: ["message"], labelfixed: true,
 		flag: "mode", valuelabel: "Randomize", values: "random",
 		typedesc: "Choose one child at random and show it",
 	},
 	text: {
-		valuelabel: "Text", flag: "message", labelfixed: val => val,
+		color: "#77eeee", valuelabel: "Text", flag: "message", labelfixed: val => val,
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 };
@@ -136,27 +136,27 @@ function element_path(element) {
 	return path_cache[cache_key] = {path, connections, totheight: y};
 }
 const actives = [
-	{type: "anchor", x: 10, y: 10, color: "#ffff00", label: "When !foo is typed...", message: [""],
+	{type: "anchor", x: 10, y: 10, label: "When !foo is typed...", message: [""],
 		labellabel: "Invocation", desc: "This is how everything starts. You can't change this."},
 ];
 const favourites = [];
 const trays = {
 	Default: [
-		{type: "text", color: "#77eeee", label: "Send text to the channel", value: "Sample text message"},
-		//{type: "text", color: "#77eeee", label: "Whisper to the caller", value: "Shh this is a whisper"}, //TODO
-		{type: "delay", color: "#77ee77", label: "Delay", value: "2"},
-		{type: "random", color: "#ee7777", label: "Randomize"},
-		{type: "cooldown", color: "#aacc55", label: "Cooldown", value: "30"},
+		{type: "text", label: "Send text to the channel", value: "Sample text message"},
+		//{type: "text", label: "Whisper to the caller", value: "Shh this is a whisper"}, //TODO
+		{type: "delay", label: "Delay", value: "2"},
+		{type: "random", label: "Randomize"},
+		{type: "cooldown", label: "Cooldown", value: "30"},
 	],
 	Builtins: [
-		{type: "builtin_uptime", color: "#ee77ee", label: "Channel uptime"},
-		{type: "builtin_shoutout", color: "#ee77ee", label: "Shoutout", builtin_param: "%s"},
-		{type: "builtin_calc", color: "#ee77ee", label: "Calculator", builtin_param: "1 + 2 + 3"},
+		{type: "builtin_uptime", label: "Channel uptime"},
+		{type: "builtin_shoutout", label: "Shoutout", builtin_param: "%s"},
+		{type: "builtin_calc", label: "Calculator", builtin_param: "1 + 2 + 3"},
 	],
 	Conditionals: [
-		{type: "conditional", color: "#7777ee", label: "Comparison", newlabel: "If THIS is THAT"},
-		{type: "conditional", color: "#7777ee", label: "Containment", newlabel: "If Needle in Haystack"},
-		{type: "conditional", color: "#7777ee", label: "Numeric calculation", newlabel: "If this isn't zero"},
+		{type: "conditional", label: "Comparison", newlabel: "If THIS is THAT"},
+		{type: "conditional", label: "Containment", newlabel: "If Needle in Haystack"},
+		{type: "conditional", label: "Numeric calculation", newlabel: "If this isn't zero"},
 		//NOTE: Even though they're internally conditionals too, cooldowns don't belong here
 	],
 };
@@ -186,19 +186,20 @@ function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
 	if (reposition) {el.x = parent.x + reposition.x; el.y = parent.y + reposition.y;}
 	const path = element_path(el);
+	const type = types[el.type];
 	ctx.save();
 	ctx.translate(el.x|0, el.y|0);
-	ctx.fillStyle = el.color;
+	ctx.fillStyle = el.color || type.color;
 	ctx.fill(path.path);
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
-	let desc = types[el.type].fixed ? "" : "⣿ ";
+	let desc = type.fixed ? "" : "⣿ ";
 	if (el.template) desc = "⯇ ";
 	if (el.label) desc += el.label;
 	ctx.fillText(desc, 20, 20, 175);
 	ctx.stroke(path.path);
 	ctx.restore();
-	const children = types[el.type].children || [];
+	const children = type.children || [];
 	let conn = path.connections, cc = 0;
 	for (let i = 0; i < children.length; ++i) {
 		const childset = el[children[i]];
@@ -487,7 +488,7 @@ function element_to_message(el) {
 }
 
 function message_to_element(msg) {
-	if (typeof msg === "string") return {type: "text", color: "#77eeee", label: msg, value: msg};
+	if (typeof msg === "string") return {type: "text", label: msg, value: msg};
 	if (Array.isArray(msg)) return msg.map(message_to_element);
 	for (let typename in types) {
 		const type = types[typename];
@@ -510,7 +511,7 @@ function message_to_element(msg) {
 				default: matches = false; break;
 			}
 			if (matches) {
-				const el = {type: typename, color: type.color || "#c0ffee", value: val, label: typename};
+				const el = {type: typename, value: val, label: typename};
 				if (typeof type.labelfixed === "function") el.label = type.labelfixed(val);
 				delete msg[type.flag];
 				if (type.children) for (let attr of type.children) {
@@ -523,7 +524,7 @@ function message_to_element(msg) {
 		}
 	}
 	if (msg.message) return message_to_element(msg.message);
-	return {type: "text", color: "#77eeee", label: "Shouldn't happen", value: "Shouldn't happen"};
+	return {type: "text", color: "#ff0000", label: "Shouldn't happen", value: "Shouldn't happen"};
 }
 
 on("click", "#open_json", e => {
