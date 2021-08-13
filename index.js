@@ -10,6 +10,7 @@
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
+* Templates with children - good for favs, maybe also for example cooldown usage?
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
