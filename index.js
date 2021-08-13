@@ -142,21 +142,21 @@ const actives = [
 const favourites = [];
 const trays = {
 	Default: [
-		{type: "text", label: "Send text to the channel", value: "Sample text message"},
-		//{type: "text", label: "Whisper to the caller", value: "Shh this is a whisper"}, //TODO
-		{type: "delay", label: "Delay", value: "2"},
-		{type: "random", label: "Randomize"},
-		{type: "cooldown", label: "Cooldown", value: "30"},
+		{type: "text", value: "Sample text message"},
+		//{type: "text", value: "Shh this is a whisper"}, //TODO
+		{type: "delay", value: "2"},
+		{type: "random"},
+		{type: "cooldown", value: "30"},
 	],
 	Builtins: [
-		{type: "builtin_uptime", label: "Channel uptime"},
-		{type: "builtin_shoutout", label: "Shoutout", builtin_param: "%s"},
-		{type: "builtin_calc", label: "Calculator", builtin_param: "1 + 2 + 3"},
+		{type: "builtin_uptime"},
+		{type: "builtin_shoutout", builtin_param: "%s"},
+		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
 	],
 	Conditionals: [
-		{type: "conditional", label: "Comparison", newlabel: "If THIS is THAT"},
-		{type: "conditional", label: "Containment", newlabel: "If Needle in Haystack"},
-		{type: "conditional", label: "Numeric calculation", newlabel: "If this isn't zero"},
+		{type: "conditional", label: "Comparison"}, //TODO.
+		{type: "conditional", label: "Containment"},
+		{type: "conditional", label: "Numeric calculation"},
 		//NOTE: Even though they're internally conditionals too, cooldowns don't belong here
 	],
 };
@@ -195,7 +195,7 @@ function draw_at(ctx, el, parent, reposition) {
 	ctx.font = "12px sans";
 	let desc = type.fixed ? "" : "⣿ ";
 	if (el.template) desc = "⯇ ";
-	if (el.label) desc += el.label;
+	desc += type.label(el);
 	ctx.fillText(desc, 20, 20, 175);
 	ctx.stroke(path.path);
 	ctx.restore();
@@ -312,10 +312,8 @@ canvas.addEventListener("pointerdown", e => {
 	e.target.setPointerCapture(e.pointerId);
 	if (el.template) {
 		//Clone and spawn.
-		el = {...el, template: false, label: el.newlabel || el.label, fresh: true};
-		if (el.newlabel) delete el.newlabel;
+		el = {...el, template: false, fresh: true};
 		for (let attr of types[el.type].children || []) el[attr] = [""];
-		el.label = types[el.type].label(el);
 		actives.push(el);
 		refactor();
 	}
@@ -463,7 +461,6 @@ on("submit", "#setprops", e => {
 		//Ultimately the server will validate, but it's ugly to let it sit around wrong.
 		propedit.value = val.value;
 	}
-	propedit.label = type.label(propedit);
 	propedit = null;
 	e.match.closest("dialog").close();
 	repaint();
@@ -512,13 +509,12 @@ function message_to_element(msg) {
 				default: matches = false; break;
 			}
 			if (matches) {
-				const el = {type: typename, value: val, label: typename};
+				const el = {type: typename, value: val};
 				delete msg[type.flag];
 				if (type.children) for (let attr of type.children) {
 					el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
 					el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
 				}
-				el.label = type.label(el);
 				actives.push(el); //HACK: Easier to add to array here than to collect them afterwards
 				return el;
 			}
