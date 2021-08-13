@@ -53,7 +53,7 @@ const types = {
 	//(although it might still be clearer, in complicated cases where evaluation order matters). But
 	//what makes some things work better as paint and others as elements?
 	delay: {
-		children: ["message"], labelfixed: true,
+		children: ["message"], labelfixed: val => `Delay ${val} seconds`,
 		flag: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
 		typedesc: "Delay the children by a certain length of time",
 	},
@@ -295,6 +295,8 @@ canvas.addEventListener("pointerdown", e => {
 		el = {...el, template: false, label: el.newlabel || el.label, fresh: true};
 		if (el.newlabel) delete el.newlabel;
 		for (let attr of types[el.type].children || []) el[attr] = [""];
+		const labelfixed = types[el.type].labelfixed;
+		if (typeof labelfixed === "function") el.label = labelfixed(el.value);
 		actives.push(el);
 		refactor();
 	}
@@ -412,7 +414,7 @@ canvas.addEventListener("dblclick", e => {
 	set_content("#labellabel", type.labellabel || el.labellabel || "Label");
 	set_content("#typedesc", type.typedesc || el.desc);
 	DOM("[name=label]").value = el.label;
-	DOM("[name=label]").disabled = type.labelfixed;
+	DOM("[name=label]").disabled = !!type.labelfixed;
 	if (type.valuelabel) switch (typeof type.values) {
 		//"object" has to mean array, we don't support any other type
 		case "object": if (type.values.length === 3 && typeof type.values[0] === "number") {
@@ -439,13 +441,14 @@ on("input", "#properties input", e => set_content("#properties form button", "Ap
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
-	if (!type.labelfixed) propedit.label = DOM("[name=label]").value;
 	const val = DOM("[name=value]");
 	if (val) {
 		//TODO: Validate based on the type, to prevent junk data from hanging around until save
 		//Ultimately the server will validate, but it's ugly to let it sit around wrong.
 		propedit.value = val.value;
 	}
+	if (!type.labelfixed) propedit.label = DOM("[name=label]").value;
+	else if (typeof type.labelfixed === "function") propedit.label = type.labelfixed(propedit.value);
 	propedit = null;
 	e.match.closest("dialog").close();
 	repaint();
