@@ -67,6 +67,11 @@ const types = {
 		labellabel: "Condition",
 		typedesc: "Make a decision - if it's true, do one thing, otherwise do something else.",
 	},
+	cooldown: {
+		children: ["message", "otherwise"], labelfixed: val => val + "-second cooldown",
+		valuelabel: "Delay (seconds)", values: [1, 7200, 1],
+		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
+	},
 	random: {
 		children: ["message"], labelfixed: true,
 		flag: "mode", valuelabel: "Randomize", values: "random",
@@ -128,6 +133,7 @@ const trays = {
 		//{type: "text", color: "#77eeee", label: "Whisper to the caller", newlabel: "Shh this is a whisper"}, //TODO
 		{type: "delay", color: "#77ee77", label: "Delay", value: "2"},
 		{type: "random", color: "#ee7777", label: "Randomize"},
+		{type: "cooldown", color: "#aacc55", label: "Cooldown", value: "30"},
 	],
 	Builtins: [
 		{type: "builtin", color: "#ee77ee", label: "Channel uptime", builtin: "uptime"},
