@@ -561,7 +561,7 @@ function matches(param, val) {
 			const [min, max, step] = param.values;
 			return num >= min && min <= max && !((num - min) % step);
 		} else returntype.values.includes(val);
-		case "undefined": return true;
+		case "undefined": return typeof val === "string";
 		case "string": return param.values === val;
 		default: return false;
 	}
