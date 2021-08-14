@@ -733,8 +733,7 @@ on("click", "#open_json", e => {
 	DOM("#jsondlg").showModal();
 });
 
-on("submit", "#jsondlg form", e => {
-	const msg = JSON.parse(DOM("#jsontext").value);
+function load_message(msg) {
 	actives.splice(1); //Truncate
 	for (let attr in flags) {
 		actives[0][attr] = msg[attr] || "";
@@ -743,7 +742,10 @@ on("submit", "#jsondlg form", e => {
 	const el = message_to_element(msg);
 	actives[0].message = ensure_blank(arrayify(el));
 	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
-	e.match.closest("dialog").close();
-	console.log(actives);
 	refactor(); repaint();
+}
+on("submit", "#jsondlg form", e => {
+	load_message(JSON.parse(DOM("#jsontext").value));
+	e.match.closest("dialog").close();
 });
+load_message({message: "Hello, world"});
