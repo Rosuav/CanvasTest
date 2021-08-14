@@ -700,6 +700,7 @@ const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to 
 function message_to_element(msg) {
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
 	if (Array.isArray(msg)) return msg.map(message_to_element);
+	//TODO: If there are any flags set that can apply to subelements, add an element that carries them
 	for (let typename in types) {
 		const type = types[typename];
 		if (type.params && type.params.every(p => matches(p, msg[p.attr]))) {
@@ -722,8 +723,12 @@ function message_to_element(msg) {
 on("click", "#open_json", e => {
 	//Starting at the anchor, recursively calculate an echoable message which will create
 	//the desired effect.
-	//assert actives[0].type === "anchor"
-	const msg = element_to_message(actives[0]);
+	const anchor = actives[0]; //assert anchor.type === "anchor"
+	const msg = element_to_message(anchor);
+	for (let attr in flags) {
+		const flag = flags[attr][anchor[attr]];
+		if (flag && anchor[attr] !== "") msg[attr] = anchor[attr];
+	}
 	DOM("#jsontext").value = JSON.stringify(msg);
 	DOM("#jsondlg").showModal();
 });
@@ -731,6 +736,10 @@ on("click", "#open_json", e => {
 on("submit", "#jsondlg form", e => {
 	const msg = JSON.parse(DOM("#jsontext").value);
 	actives.splice(1); //Truncate
+	for (let attr in flags) {
+		actives[0][attr] = msg[attr] || "";
+		delete msg[attr];
+	}
 	const el = message_to_element(msg);
 	actives[0].message = ensure_blank(arrayify(el));
 	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
