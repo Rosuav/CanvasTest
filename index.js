@@ -84,7 +84,7 @@ const types = {
 	delay: {
 		color: "#77ee77", children: ["message"], label: el => `Delay ${el.delay} seconds`,
 		params: [{attr: "delay", label: "Delay (seconds)", values: [1, 7200, 1]}],
-		typedesc: "Delay the children by a certain length of time",
+		typedesc: "Delay message(s) by a certain length of time",
 	},
 	builtin_uptime: {
 		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
@@ -167,7 +167,7 @@ const types = {
 	text: {
 		color: "#77eeee", label: el => el.message,
 		params: [{attr: "message", label: "Text"}],
-		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
+		typedesc: "Send a message in the channel", //TODO: Make other types that, as well as having editable text, set flags eg "Whisper"
 	},
 	flag: {
 		color: "#aaddff", label: el => el.icon,
@@ -235,7 +235,7 @@ function element_path(element) {
 }
 const actives = [
 	{type: "anchor", x: 10, y: 25, label: "When !foo is typed...", message: [""],
-		desc: "This is how everything starts. You can't change this."},
+		desc: "This is how everything starts. Drag flags onto this to apply them."},
 ];
 const favourites = [];
 const trays = {
