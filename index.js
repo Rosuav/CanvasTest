@@ -339,6 +339,13 @@ function draw_at(ctx, el, parent, reposition) {
 	else if (!type.fixed) labels[0] = "⣿ " + labels[0];
 	for (let i = 0; i < labels.length; ++i) ctx.fillText(labels[i].slice(0, 28), label_x, path.labelpos[i], 175);
 	ctx.stroke(path.path);
+	let flag_x = 220;
+	for (let attr in flags) {
+		const flag = flags[attr][el[attr]];
+		if (flag && el[attr] !== "") {
+			draw_at(ctx, {...flag, x: flag_x -= 30, y: -24});
+		}
+	}
 	ctx.restore();
 	const children = type.children || [];
 	let conn = path.connections, cc = 0;
@@ -554,7 +561,7 @@ canvas.addEventListener("pointerup", e => {
 		//TODO: Show this on pointer-move too
 		let x = e.offsetX - dragbasex, y = e.offsetY - dragbasey;
 		const anchor = actives[0]; //assert anchor.type === "anchor"
-		if (x >= anchor.x - 10 && x <= anchor.x + 220 && y >= anchor.y - 10 &&
+		if (x >= anchor.x - 10 && x <= anchor.x + 220 && y >= anchor.y - 30 &&
 				y <= anchor.y + element_path(anchor).totheight + 10) {
 			anchor[dragging.attr] = dragging.value;
 		}
