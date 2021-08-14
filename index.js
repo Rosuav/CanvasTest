@@ -297,7 +297,7 @@ let dragging = null, dragbasex = 50, dragbasey = 10;
 const flags = {
 	access: {
 		"none": {icon: "🔒", desc: "Access: None"},
-		"mod": {icon: "🗡", iconcolor: "#00aa00", desc: "Access: Mods"},
+		"mod": {icon: "🗡", labelcolor: "#00aa00", desc: "Access: Mods"},
 		"vip": {icon: "💎", desc: "Access: Mods/VIPs"},
 		"": {icon: "👪", desc: "Access: Everyone"},
 	},
@@ -328,7 +328,7 @@ function draw_at(ctx, el, parent, reposition) {
 	ctx.translate(el.x|0, el.y|0);
 	ctx.fillStyle = el.color || type.color;
 	ctx.fill(path.path);
-	ctx.fillStyle = "black";
+	ctx.fillStyle = el.labelcolor || "black";
 	ctx.font = "12px sans";
 	const labels = arrayify(type.label(el));
 	let label_x = 20;
