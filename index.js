@@ -3,10 +3,7 @@
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
-* Conditionals are stubbed out - need their 1-2 values
-  - Need to know somehow which ones have 1 and which have 2
 * Saving of favourites. ??? WHERE???
-* Builtins need params
 * Builtins (and some anchor types) provide replaceable values.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them??
 
