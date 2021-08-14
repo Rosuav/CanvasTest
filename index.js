@@ -171,7 +171,11 @@ const types = {
 	},
 	flag: {
 		color: "#aaddff", label: el => el.icon,
-		style: "flag-compact",
+		style: "flag", width: 25,
+	},
+	dragflag: {
+		color: "#aaddff", label: el => el.icon + " " + el.desc,
+		style: "flag", width: 150,
 	},
 };
 
@@ -189,8 +193,8 @@ function element_path(element) {
 	const type = types[element.type];
 	const path = new Path2D;
 	path.moveTo(0, 0);
-	if (type.style === "flag-compact") {
-		const width = 25;
+	if (type.style === "flag") {
+		const width = type.width;
 		path.lineTo(width, 0);
 		path.bezierCurveTo(width + 4, 12, width - 4, 5, width, 20); //Curve on the edge of the flag
 		path.lineTo(5, 20);
@@ -282,7 +286,7 @@ function refactor() {facts = [].concat(favourites, trays[current_tray], specials
 const tab_width = 15, tab_height = 80;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
-const paintbox_x = 230, paintbox_height = 25;
+const paintbox_x = 230, paintbox_height = 40;
 const paintbox_width = template_x - paintbox_x - tab_width * 2; //Should this be based on the amount of stuff in it?
 let traytab_path = null, paintbox_path = null;
 let dragging = null, dragbasex = 50, dragbasey = 10;
@@ -292,14 +296,14 @@ let dragging = null, dragbasex = 50, dragbasey = 10;
 //There must always be an empty-string option, which is also used if the attribute isn't set.
 const flags = {
 	access: {
-		"none": {icon: "🔒", desc: "Access: None (command disabled)"},
-		"mod": {icon: "🗡", iconcolor: "#00aa00", desc: "Access: Mods only"},
+		"none": {icon: "🔒", desc: "Access: None"},
+		"mod": {icon: "🗡", iconcolor: "#00aa00", desc: "Access: Mods"},
 		"vip": {icon: "💎", desc: "Access: Mods/VIPs"},
 		"": {icon: "👪", desc: "Access: Everyone"},
 	},
 	visibility: {
-		"": {icon: "🌞", desc: "Visible/public command"},
-		"hidden": {icon: "🌚", desc: "Hidden/secret command"},
+		"": {icon: "🌞", desc: "Public command"},
+		"hidden": {icon: "🌚", desc: "Secret command"},
 	},
 };
 	
@@ -316,7 +320,7 @@ function draw_at(ctx, el, parent, reposition) {
 	ctx.font = "12px sans";
 	const labels = arrayify(type.label(el));
 	let label_x = 20;
-	if (type.style === "flag-compact") label_x = 6; //Hack!
+	if (type.style === "flag") label_x = 6; //Hack!
 	else if (el.template) labels[0] = "⯇ " + labels[0];
 	else if (!type.fixed) labels[0] = "⣿ " + labels[0];
 	for (let i = 0; i < labels.length; ++i) ctx.fillText(labels[i].slice(0, 28), label_x, path.labelpos[i], 175);
@@ -410,7 +414,7 @@ function repaint() {
 	ctx.fillText("🌞", 125, 17);
 	ctx.fillText("🌚", 145, 17);
 	ctx.restore();
-	draw_at(ctx, {type: "flag", icon: "🔒", x: paintbox_x + 30, y: 40});
+	draw_at(ctx, {type: "dragflag", icon: "🔒", x: paintbox_x + 30, y: 50, desc: "Access: None"});
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
 	if (dragging) draw_at(ctx, dragging); //Anything being dragged gets drawn last, ensuring it is at the top of z-order.
