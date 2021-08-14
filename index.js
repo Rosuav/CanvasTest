@@ -121,6 +121,11 @@ const types = {
 		params: [{attr: "builtin", values: "transcoding"}],
 		typedesc: "Check whether the channel has transcoding (quality options)",
 	},
+	builtin_other: {
+		color: "#ee77ee", children: ["message"], label: el => "Unknown Builtin: " + el.builtin,
+		params: [{attr: "builtin", label: "Builtin name"}],
+		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
+	},
 	conditional_string: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
 		params: [{attr: "conditional", values: "string"}, {attr: "expr1", label: "Expression 1"}, {attr: "expr2", label: "Expression 2"}],
