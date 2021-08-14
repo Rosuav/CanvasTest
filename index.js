@@ -260,7 +260,9 @@ function refactor() {facts = [].concat(favourites, trays[current_tray], specials
 const tab_width = 15, tab_height = 80;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
-let traytab_path = null;
+const paintbox_x = 230, paintbox_height = 25;
+const paintbox_width = template_x - paintbox_x - tab_width * 2; //Should this be based on the amount of stuff in it?
+let traytab_path = null, paintbox_path = null;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -346,6 +348,19 @@ function repaint() {
 		ctx.restore();
 	}
 	render(specials, spec_y + 25);
+	if (!paintbox_path) {
+		paintbox_path = new Path2D;
+		paintbox_path.moveTo(0, 0);
+		paintbox_path.lineTo(tab_width, paintbox_height);
+		paintbox_path.lineTo(paintbox_width - tab_width, paintbox_height);
+		paintbox_path.lineTo(paintbox_width, 0);
+	}
+	ctx.save();
+	ctx.translate(paintbox_x, 0);
+	ctx.fillStyle = "#efdbb2";
+	ctx.fill(paintbox_path);
+	ctx.stroke(paintbox_path);
+	ctx.restore();
 	actives.forEach(el => el.parent || draw_at(ctx, el));
 }
 repaint();
