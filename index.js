@@ -15,6 +15,7 @@
   - casefold on all string-based conditionals
   - voice=ID -- paint!
   - aliases?? Edit the anchor??
+  - More builtin types
 * Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
   have an old command in this form, edit and save it in the default or raw UIs, then open this one.
 
