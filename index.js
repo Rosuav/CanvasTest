@@ -551,6 +551,7 @@ canvas.addEventListener("pointerup", e => {
 	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
 	if (dragging.type === "dragflag") {
 		//Special: Dragging a flag applies it to the anchor, or discards it. Nothing else.
+		//TODO: Show this on pointer-move too
 		let x = e.offsetX - dragbasex, y = e.offsetY - dragbasey;
 		const anchor = actives[0]; //assert anchor.type === "anchor"
 		if (x >= anchor.x - 10 && x <= anchor.x + 220 && y >= anchor.y - 10 &&
