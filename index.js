@@ -23,7 +23,7 @@ editing (command, trigger, special, etc). Some anchors will offer information th
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
-const {LABEL, INPUT, SELECT, OPTION} = choc;
+const {LABEL, INPUT, SELECT, OPTION, TR, TD} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
@@ -480,25 +480,22 @@ canvas.addEventListener("dblclick", e => {
 	propedit = el;
 	const type = types[el.type];
 	set_content("#typedesc", type.typedesc || el.desc);
-	const param = type.params[0];
-	if (param) switch (typeof param.values) {
-		//"object" has to mean array, we don't support any other type
-		case "object": if (param.values.length === 3 && typeof param.values[0] === "number") {
-			set_content("#valueholder", LABEL([
-				param.label + ": ",
-				INPUT({name: "value", type: "number", min: param.values[0], max: param.values[1], step: param.values[2], value: el[param.attr]}),
-			]));
-		} else {
-			set_content("#valueholder", LABEL([
-				param.label + ": ",
-				SELECT({name: "value"}, param.values.map(v => OPTION(v))), //TODO: Allow value and description to differ
-			]));
+	set_content("#params", type.params.map(param => {
+		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr};
+		switch (typeof param.values) {
+			//"object" has to mean array, we don't support any other type
+			case "object": if (param.values.length === 3 && typeof param.values[0] === "number") {
+				const [min, max, step] = param.values;
+				control = INPUT({...id, type: "number", min, max, step, value: el[param.attr]});
+			} else {
+				control = SELECT(id, param.values.map(v => OPTION(v))); //TODO: Allow value and description to differ
+			}
+			break;
+			case "undefined": control = INPUT({...id, value: el[param.attr] || "", size: 50}); break;
+			default: break; //incl fixed strings
 		}
-		break;
-		case "undefined": set_content("#valueholder", LABEL([param.label + ": ", INPUT({name: "value", value: el[param.attr], size: 50})])); break;
-		default: set_content("#valueholder", ""); break; //incl fixed strings
-	}
-	else set_content("#valueholder", "");
+		return control && TR([TD(LABEL({htmlFor: "value-" + param.attr}, param.label + ": ")), TD(control)]);
+	}));
 	set_content("#properties form button", "Close");
 	DOM("#properties").showModal();
 });
@@ -507,11 +504,13 @@ on("input", "#properties input", e => set_content("#properties form button", "Ap
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
-	const val = DOM("[name=value]");
-	if (val) {
-		//TODO: Validate based on the type, to prevent junk data from hanging around until save
-		//Ultimately the server will validate, but it's ugly to let it sit around wrong.
-		propedit[type.params[0].attr] = val.value;
+	for (let param of type.params) {
+		const val = document.getElementById("value-" + param.attr);
+		if (val) {
+			//TODO: Validate based on the type, to prevent junk data from hanging around until save
+			//Ultimately the server will validate, but it's ugly to let it sit around wrong.
+			propedit[param.attr] = val.value;
+		}
 	}
 	propedit = null;
 	e.match.closest("dialog").close();
@@ -525,7 +524,7 @@ function element_to_message(el) {
 	if (type.children) for (let attr of type.children) {
 		ret[attr] = el[attr].filter(e => e !== "").map(element_to_message);
 	}
-	type.params.forEach(p => ret[p.attr] = el[attr]);
+	if (type.params) type.params.forEach(p => ret[p.attr] = el[p.attr]);
 	return ret;
 }
 
@@ -545,11 +544,11 @@ function matches(param, val) {
 }
 const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to array here than to collect them afterwards
 function message_to_element(msg) {
-	if (typeof msg === "string") return new_elem({type: "text", label: msg, value: msg});
+	if (typeof msg === "string") return new_elem({type: "text", message: msg});
 	if (Array.isArray(msg)) return msg.map(message_to_element);
 	for (let typename in types) {
 		const type = types[typename];
-		if (type.params.every(p => matches(p, msg[p.attr]))) {
+		if (type.params && type.params.every(p => matches(p, msg[p.attr]))) {
 			const el = new_elem({type: typename});
 			for (let param of type.params) {
 				el[param.attr] = msg[param.attr];
