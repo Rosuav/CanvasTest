@@ -634,7 +634,7 @@ canvas.addEventListener("dblclick", e => {
 	propedit = el;
 	const type = types[el.type];
 	set_content("#typedesc", type.typedesc || el.desc);
-	set_content("#params", type.params.map(param => {
+	set_content("#params", (type.params||[]).map(param => {
 		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr};
 		switch (typeof param.values) {
 			//"object" has to mean array, we don't support any other type
@@ -658,7 +658,7 @@ on("input", "#properties input", e => set_content("#properties form button", "Ap
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
-	for (let param of type.params) {
+	if (type.params) for (let param of type.params) {
 		const val = document.getElementById("value-" + param.attr);
 		if (val) {
 			//TODO: Validate based on the type, to prevent junk data from hanging around until save
