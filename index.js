@@ -26,8 +26,6 @@ import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/
 const {LABEL, INPUT, SELECT, OPTION} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
-const FAVOURITES_ATTRIBUTES = "type color".split(" "); //Saveable attributes of favourites (plus children, based on the type)
-
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
@@ -43,11 +41,11 @@ const types = {
 		color: "#ffff00", fixed: true, children: ["message"],
 		label: el => el.label,
 	},
-	//Types can apply attributes to a message. Each one needs an attribute name and a set of values.
-	//The values can be provided as an array of strings (take your pick), a single string (fixed value,
+	//Types can apply zero or more attributes to a message, each one with a set of valid values.
+	//Validity can be defined by an array of strings (take your pick), a single string (fixed value,
 	//cannot change), undefined (allow user to type), or an array of three numbers [min, max, step],
 	//which define a range of numeric values.
-	//Ideally, also provide a typedesc.
+	//If the value is editable (ie not a fixed string), also provide a label for editing.
 	//These will be detected in the order they are iterated over.
 	//TODO: Which things should be elements and which should be paint??
 	//Paint's job is to reduce the size of the visible tree. If we don't have any paint, this tree will
@@ -55,57 +53,58 @@ const types = {
 	//(although it might still be clearer, in complicated cases where evaluation order matters). But
 	//what makes some things work better as paint and others as elements?
 	delay: {
-		color: "#77ee77", children: ["message"], label: el => `Delay ${el.value} seconds`,
-		attr: "delay", valuelabel: "Delay (seconds)", values: [1, 7200, 1],
+		color: "#77ee77", children: ["message"], label: el => `Delay ${el.delay} seconds`,
+		params: [{attr: "delay", label: "Delay (seconds)", values: [1, 7200, 1]}],
 		typedesc: "Delay the children by a certain length of time",
 	},
 	builtin_uptime: {
 		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
-		attr: "builtin", values: "uptime",
+		params: [{attr: "builtin", values: "uptime"}],
 		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
 	},
 	builtin_shoutout: {
 		color: "#ee77ee", children: ["message"], label: el => "Shoutout",
-		attr: "builtin", values: "shoutout",
+		params: [{attr: "builtin", values: "shoutout"}],
 		typedesc: "Fetch information about another channel and what it has recently streamed",
 	},
 	builtin_calc: {
 		color: "#ee77ee", children: ["message"], label: el => "Calculator",
-		attr: "builtin", values: "calc",
+		params: [{attr: "builtin", values: "calc"}],
 		typedesc: "Perform arithmetic calculations",
 	},
 	conditional_string: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
-		attr: "conditional", values: "string",
+		params: [{attr: "conditional", values: "string"}],
 		typedesc: "Make a decision - if THIS is THAT, do one thing, otherwise do something else.",
 	},
 	conditional_contains: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String includes", "Otherwise:"],
-		attr: "conditional", values: "contains",
+		params: [{attr: "conditional", values: "contains"}],
 		typedesc: "Make a decision - if Needle in Haystack, do one thing, otherwise do something else.",
 	},
 	conditional_regexp: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Regular expression", "Otherwise:"],
-		attr: "conditional", values: "regexp",
+		params: [{attr: "conditional", values: "regexp"}],
 		typedesc: "Make a decision - if regular expression, do one thing, otherwise do something else.",
 	},
 	conditional_number: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Numeric computation", "Otherwise:"],
-		attr: "conditional", values: "number",
+		params: [{attr: "conditional", values: "number"}],
 		typedesc: "Make a decision - if the result's nonzero, do one thing, otherwise do something else.",
 	},
 	cooldown: {
-		color: "#aacc55", children: ["message", "otherwise"], label: el => [el.value + "-second cooldown", "If on cooldown:"],
-		valuelabel: "Delay (seconds)", values: [1, 7200, 1],
+		color: "#aacc55", children: ["message", "otherwise"], label: el => [el.cdlength + "-second cooldown", "If on cooldown:"],
+		params: [{attr: "cdlength", label: "Delay (seconds)", values: [1, 7200, 1]}],
 		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
 	},
 	random: {
 		color: "#ee7777", children: ["message"], label: el => "Randomize",
-		attr: "mode", valuelabel: "Randomize", values: "random",
+		params: [{attr: "mode", label: "Randomize", values: "random"}],
 		typedesc: "Choose one child at random and show it",
 	},
 	text: {
-		color: "#77eeee", valuelabel: "Text", attr: "message", label: el => el.value,
+		color: "#77eeee", label: el => el.message,
+		params: [{attr: "message", label: "Text"}],
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 };
@@ -161,11 +160,11 @@ const actives = [
 const favourites = [];
 const trays = {
 	Default: [
-		{type: "text", value: "Sample text message"},
+		{type: "text", message: "Sample text message"},
 		//{type: "text", value: "Shh this is a whisper"}, //TODO
-		{type: "delay", value: "2"},
+		{type: "delay", delay: "2"},
 		{type: "random"},
-		{type: "cooldown", value: "30"},
+		{type: "cooldown", cdlength: "30"},
 	],
 	Builtins: [
 		{type: "builtin_uptime"},
@@ -481,21 +480,22 @@ canvas.addEventListener("dblclick", e => {
 	propedit = el;
 	const type = types[el.type];
 	set_content("#typedesc", type.typedesc || el.desc);
-	if (type.valuelabel) switch (typeof type.values) {
+	const param = type.params[0];
+	if (param) switch (typeof param.values) {
 		//"object" has to mean array, we don't support any other type
-		case "object": if (type.values.length === 3 && typeof type.values[0] === "number") {
+		case "object": if (param.values.length === 3 && typeof param.values[0] === "number") {
 			set_content("#valueholder", LABEL([
-				type.valuelabel + ": ",
-				INPUT({name: "value", type: "number", min: type.values[0], max: type.values[1], step: type.values[2], value: el.value}),
+				param.label + ": ",
+				INPUT({name: "value", type: "number", min: param.values[0], max: param.values[1], step: param.values[2], value: el[param.attr]}),
 			]));
 		} else {
 			set_content("#valueholder", LABEL([
-				type.valuelabel + ": ",
-				SELECT({name: "value"}, type.values.map(v => OPTION(v))), //TODO: Allow value and description to differ
+				param.label + ": ",
+				SELECT({name: "value"}, param.values.map(v => OPTION(v))), //TODO: Allow value and description to differ
 			]));
 		}
 		break;
-		case "undefined": set_content("#valueholder", LABEL([type.valuelabel + ": ", INPUT({name: "value", value: el.value, size: 50})])); break;
+		case "undefined": set_content("#valueholder", LABEL([param.label + ": ", INPUT({name: "value", value: el[param.attr], size: 50})])); break;
 		default: set_content("#valueholder", ""); break; //incl fixed strings
 	}
 	else set_content("#valueholder", "");
@@ -511,7 +511,7 @@ on("submit", "#setprops", e => {
 	if (val) {
 		//TODO: Validate based on the type, to prevent junk data from hanging around until save
 		//Ultimately the server will validate, but it's ugly to let it sit around wrong.
-		propedit.value = val.value;
+		propedit[type.params[0].attr] = val.value;
 	}
 	propedit = null;
 	e.match.closest("dialog").close();
@@ -525,45 +525,41 @@ function element_to_message(el) {
 	if (type.children) for (let attr of type.children) {
 		ret[attr] = el[attr].filter(e => e !== "").map(element_to_message);
 	}
-	if (type.attr) ret[type.attr] = el.value;
-	if (el.builtin) ret.builtin = el.builtin;
-	if (el.builtin_param) ret.builtin = el.builtin_param;
+	type.params.forEach(p => ret[p.attr] = el[attr]);
 	return ret;
 }
 
+function matches(param, val) {
+	//See if the value is compatible with this parameter's definition of values.
+	switch (typeof param.values) {
+		//"object" has to mean array, we don't support any other type
+		case "object": if (param.values.length === 3 && typeof param.values[0] === "number") {
+			const num = parseFloat(val);
+			const [min, max, step] = param.values;
+			return num >= min && min <= max && !((num - min) % step);
+		} else returntype.values.includes(val);
+		case "undefined": return true;
+		case "string": return param.values === val;
+		default: return false;
+	}
+}
 const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to array here than to collect them afterwards
 function message_to_element(msg) {
 	if (typeof msg === "string") return new_elem({type: "text", label: msg, value: msg});
 	if (Array.isArray(msg)) return msg.map(message_to_element);
 	for (let typename in types) {
 		const type = types[typename];
-		if (type.attr && msg[type.attr]) {
-			const val = msg[type.attr];
-			let matches = false;
-			//See if the value is compatible with this type's definition of values.
-			switch (typeof type.values) {
-				//"object" has to mean array, we don't support any other type
-				case "object": if (type.values.length === 3 && typeof type.values[0] === "number") {
-					const num = parseFloat(val);
-					const [min, max, step] = type.values;
-					if (num >= min && min <= max && !((num - min) % step)) matches = true;
-				} else {
-					matches = type.values.includes(val);
-				}
-				break;
-				case "undefined": matches = true; break;
-				case "string": matches = type.values === val; break;
-				default: matches = false; break;
-			}
-			if (matches) {
-				const el = new_elem({type: typename, value: val});
+		if (type.params.every(p => matches(p, msg[p.attr]))) {
+			const el = new_elem({type: typename});
+			for (let param of type.params) {
+				el[param.attr] = msg[param.attr];
 				delete msg[type.attr];
-				if (type.children) for (let attr of type.children) {
-					el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
-					el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
-				}
-				return el;
 			}
+			if (type.children) for (let attr of type.children) {
+				el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
+				el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
+			}
+			return el;
 		}
 	}
 	if (msg.message) return message_to_element(msg.message);
