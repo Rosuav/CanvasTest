@@ -170,7 +170,7 @@ const types = {
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 	flag: {
-		color: "#aaddff", label: el => "",
+		color: "#aaddff", label: el => el.icon,
 		style: "flag-compact",
 	},
 };
@@ -197,7 +197,7 @@ function element_path(element) {
 		path.lineTo(5, 35);
 		path.lineTo(0, 35);
 		path.closePath();
-		return path_cache[cache_key] = {path, connections: [], totheight: 30, labelpos: [12]};
+		return path_cache[cache_key] = {path, connections: [], totheight: 30, labelpos: [14]};
 	}
 	path.lineTo(200, 0);
 	path.lineTo(200, 30);
@@ -315,9 +315,11 @@ function draw_at(ctx, el, parent, reposition) {
 	ctx.fillStyle = "black";
 	ctx.font = "12px sans";
 	const labels = arrayify(type.label(el));
-	if (el.template) labels[0] = "⯇ " + labels[0];
+	let label_x = 20;
+	if (type.style === "flag-compact") label_x = 6; //Hack!
+	else if (el.template) labels[0] = "⯇ " + labels[0];
 	else if (!type.fixed) labels[0] = "⣿ " + labels[0];
-	for (let i = 0; i < labels.length; ++i) ctx.fillText(labels[i].slice(0, 28), 20, path.labelpos[i], 175);
+	for (let i = 0; i < labels.length; ++i) ctx.fillText(labels[i].slice(0, 28), label_x, path.labelpos[i], 175);
 	ctx.stroke(path.path);
 	ctx.restore();
 	const children = type.children || [];
@@ -408,13 +410,7 @@ function repaint() {
 	ctx.fillText("🌞", 125, 17);
 	ctx.fillText("🌚", 145, 17);
 	ctx.restore();
-	ctx.save();
-	ctx.translate(paintbox_x + 30, 40);
-	const p = element_path({type: "flag"}).path;
-	ctx.fillStyle = types.flag.color; ctx.fill(p); ctx.stroke(p);
-	ctx.font = "12px sans"; ctx.fillStyle = "#00aa00";
-	ctx.fillText("🔒", 6, 14);
-	ctx.restore();
+	draw_at(ctx, {type: "flag", icon: "🔒", x: paintbox_x + 30, y: 40});
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
 	if (dragging) draw_at(ctx, dragging); //Anything being dragged gets drawn last, ensuring it is at the top of z-order.
