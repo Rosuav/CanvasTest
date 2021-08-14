@@ -284,8 +284,8 @@ const flags = {
 		"": {icon: "👪", desc: "Access: Everyone"},
 	},
 	visibility: {
-		"": {icon: "🔒", desc: "Visible/public command"},
-		"hidden": {icon: "🗡", desc: "Hidden/secret command"},
+		"": {icon: "🌞", desc: "Visible/public command"},
+		"hidden": {icon: "🌚", desc: "Hidden/secret command"},
 	},
 };
 	
@@ -391,6 +391,8 @@ function repaint() {
 	ctx.fillText("🗡", 45, 17);
 	ctx.fillText("💎", 65, 17);
 	ctx.fillText("👪", 85, 17);
+	ctx.fillText("🌞", 125, 17);
+	ctx.fillText("🌚", 145, 17);
 	ctx.restore();
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
