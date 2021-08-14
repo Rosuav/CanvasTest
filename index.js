@@ -33,8 +33,6 @@ and is everything that isn't in the Favs/Trays/Specials.
 
 FIXME: If something isn't properly recognized and then message is an object, it's not rendering right.
 
-FIXME: Bug with favs dedup
-
 TODO: If you drop a tree into favs, should you be able to drag it from anywhere? (Same if template.)
 Should it grab the whole tree or just the subtree you clicked on? (Probably the former.)
 
@@ -424,9 +422,11 @@ canvas.addEventListener("pointermove", e => {
 function same_template(t1, t2) {
 	if (t1 === "" && t2 === "") return true;
 	if (t1 === "" || t2 === "") return false;
-	for (let a of FAVOURITES_ATTRIBUTES)
-		if (t1[a] !== t2[a]) return false;
-	for (let attr of types[t1.type].children || []) {
+	if (t1.type !== t2.type) return false;
+	const type = types[t1.type];
+	if (type.params) for (let p of type.params)
+		if (t1[p.attr] !== t2[p.attr]) return false;
+	for (let attr of type.children || []) {
 		const c1 = t1[attr], c2 = t2[attr];
 		if (c1.length !== c2.length) return false;
 		for (let i = 0; i < c1.length; ++i)
