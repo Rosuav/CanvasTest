@@ -169,6 +169,10 @@ const types = {
 		params: [{attr: "message", label: "Text"}],
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
+	flag: {
+		color: "#000077", label: el => "",
+		style: "flag-compact",
+	},
 };
 
 const path_cache = { }; //TODO: Clean this out periodically
@@ -185,6 +189,16 @@ function element_path(element) {
 	const type = types[element.type];
 	const path = new Path2D;
 	path.moveTo(0, 0);
+	if (type.style === "flag-compact") {
+		const width = 25;
+		path.lineTo(width, 0);
+		path.bezierCurveTo(width + 4, 12, width - 4, 5, width, 20); //Curve on the edge of the flag
+		path.lineTo(5, 20);
+		path.lineTo(5, 35);
+		path.lineTo(0, 35);
+		path.closePath();
+		return path_cache[cache_key] = {path, connections: [], totheight: 30, labelpos: [12]};
+	}
 	path.lineTo(200, 0);
 	path.lineTo(200, 30);
 	let y = 30;
@@ -393,6 +407,13 @@ function repaint() {
 	ctx.fillText("👪", 85, 17);
 	ctx.fillText("🌞", 125, 17);
 	ctx.fillText("🌚", 145, 17);
+	ctx.restore();
+	ctx.save();
+	ctx.translate(paintbox_x + 30, 40);
+	const p = element_path({type: "flag"}).path;
+	ctx.fillStyle = "#c0ffee"; ctx.fill(p); ctx.stroke(p);
+	ctx.font = "12px sans"; ctx.fillStyle = "#00aa00";
+	ctx.fillText("🔒", 6, 14);
 	ctx.restore();
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
