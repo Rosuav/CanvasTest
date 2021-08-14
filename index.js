@@ -10,10 +10,13 @@
   - dest="/web", target
   - dest="/w", target
   - dest="/set", target, action="add" or ""
+    - For each of these, provide a small number of classes that do this with one message
+    - Have a fallback like unknown-builtin to cope with any others (it won't be in the toolbox).
   - access="mod", "vip", "none" -- paint!
   - visibility="hidden" -- paint!
   - casefold on all string-based conditionals
-  - voice=ID -- paint!
+  - voice=ID -- paint? What if it's set on just one message - how should that be imported?
+    - Maybe have an element that changes voice for its children, but not in toolbox??
   - aliases?? Edit the anchor??
 * Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
   have an old command in this form, edit and save it in the default or raw UIs, then open this one.
@@ -25,6 +28,13 @@
     gets both types of targets.
   - Drag from paint to anywhere over the element and it snaps to the target for that type.
   - Some paint will have effect on the subtree. For now, this will not be visually shown.
+* Paint can now be flags. Because, internally, they're called that anyway.
+  - In the toolbox and on the command, they are represented with icons (or emoji)
+  - While being dragged, or possibly when clicked on, unfurl the flag to show a short description.
+  - Flags mount on top of the anchor. They unfurl to the right (since I'm assuming English text here).
+  - While being dragged, is element. Otherwise, is not. Dropping needs to apply flag and dispose of
+    dragging. Painting needs to show all flags (in a consistent order).
+  - Snap to position?
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
@@ -263,6 +273,22 @@ const paintbox_width = template_x - paintbox_x - tab_width * 2; //Should this be
 let traytab_path = null, paintbox_path = null;
 let dragging = null, dragbasex = 50, dragbasey = 10;
 
+//Each flag set, identified by its attribute name, offers a number of options.
+//Each option has an emoji icon, optionally a colour, and a long desc used when dragging.
+//There must always be an empty-string option, which is also used if the attribute isn't set.
+const flags = {
+	access: {
+		"none": {icon: "🔒", desc: "Access: None (command disabled)"},
+		"mod": {icon: "🗡", iconcolor: "#00aa00", desc: "Access: Mods only"},
+		"vip": {icon: "💎", desc: "Access: Mods/VIPs"},
+		"": {icon: "👪", desc: "Access: Everyone"},
+	},
+	visibility: {
+		"": {icon: "🔒", desc: "Visible/public command"},
+		"hidden": {icon: "🗡", desc: "Hidden/secret command"},
+	},
+};
+	
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
 	if (reposition) {el.x = parent.x + reposition.x; el.y = parent.y + reposition.y;}
@@ -347,6 +373,7 @@ function repaint() {
 		ctx.restore();
 	}
 	render(specials, spec_y + 25);
+
 	if (!paintbox_path) {
 		paintbox_path = new Path2D;
 		paintbox_path.moveTo(0, 0);
@@ -359,7 +386,13 @@ function repaint() {
 	ctx.fillStyle = "#efdbb2";
 	ctx.fill(paintbox_path);
 	ctx.stroke(paintbox_path);
+	ctx.font = "12px sans"; ctx.fillStyle = "#00aa00";
+	ctx.fillText("🔒", 25, 17);
+	ctx.fillText("🗡", 45, 17);
+	ctx.fillText("💎", 65, 17);
+	ctx.fillText("👪", 85, 17);
 	ctx.restore();
+
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
 	if (dragging) draw_at(ctx, dragging); //Anything being dragged gets drawn last, ensuring it is at the top of z-order.
 }
