@@ -15,7 +15,6 @@
   - casefold on all string-based conditionals
   - voice=ID -- paint!
   - aliases?? Edit the anchor??
-  - More builtin types
 * Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
   have an old command in this form, edit and save it in the default or raw UIs, then open this one.
 * Toolbar for paint
@@ -93,6 +92,34 @@ const types = {
 		color: "#ee77ee", children: ["message"], label: el => "Calculator",
 		params: [{attr: "builtin", values: "calc"}, {attr: "builtin_param", label: "Expression"}],
 		typedesc: "Perform arithmetic calculations",
+	},
+	builtin_hypetrain: {
+		color: "#ee77ee", children: ["message"], label: el => "Hype train status",
+		params: [{attr: "builtin", values: "hypetrain"}],
+		typedesc: "Get info about a current or recent hype train in this channel",
+	},
+	builtin_giveaway: {
+		color: "#ee77ee", children: ["message"], label: el => "Giveaway tools",
+		params: [
+			{attr: "builtin", values: "mpn"},
+			{attr: "builtin_param", values: ["refund", "status"]},
+		],
+		typedesc: "Handle giveaways via channel point redemptions",
+	},
+	builtin_mpn: {
+		color: "#ee77ee", children: ["message"], label: el => "Multi-Player Notepad",
+		params: [{attr: "builtin", values: "mpn"}], //Not currently editable. Needs a lot of work.
+		typedesc: "Manipulate MPN documents. Not well supported yet.",
+	},
+	builtin_pointsrewards: {
+		color: "#ee77ee", children: ["message"], label: el => "Points Rewards",
+		params: [{attr: "builtin", values: "pointsrewards"}], //Not currently editable. Needs reward ID and a set of commands. Might not be worth doing properly.
+		typedesc: "Manipulate channel point rewards",
+	},
+	builtin_transcoding: {
+		color: "#ee77ee", children: ["message"], label: el => "Transcoding",
+		params: [{attr: "builtin", values: "transcoding"}],
+		typedesc: "Check whether the channel has transcoding (quality options)",
 	},
 	conditional_string: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
