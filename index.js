@@ -170,7 +170,7 @@ const types = {
 		typedesc: "A message to be sent. Normally spoken in the channel, but paint can affect this.",
 	},
 	flag: {
-		color: "#000077", label: el => "",
+		color: "#aaddff", label: el => "",
 		style: "flag-compact",
 	},
 };
@@ -411,7 +411,7 @@ function repaint() {
 	ctx.save();
 	ctx.translate(paintbox_x + 30, 40);
 	const p = element_path({type: "flag"}).path;
-	ctx.fillStyle = "#c0ffee"; ctx.fill(p); ctx.stroke(p);
+	ctx.fillStyle = types.flag.color; ctx.fill(p); ctx.stroke(p);
 	ctx.font = "12px sans"; ctx.fillStyle = "#00aa00";
 	ctx.fillText("🔒", 6, 14);
 	ctx.restore();
