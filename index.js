@@ -234,7 +234,7 @@ function element_path(element) {
 	return path_cache[cache_key] = {path, connections, totheight: y, labelpos};
 }
 const actives = [
-	{type: "anchor", x: 10, y: 10, label: "When !foo is typed...", message: [""],
+	{type: "anchor", x: 10, y: 25, label: "When !foo is typed...", message: [""],
 		desc: "This is how everything starts. You can't change this."},
 ];
 const favourites = [];
@@ -286,8 +286,8 @@ function refactor() {facts = [].concat(favourites, trays[current_tray], specials
 const tab_width = 15, tab_height = 80;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
-const paintbox_x = 230, paintbox_height = 40;
-const paintbox_width = template_x - paintbox_x - tab_width * 2; //Should this be based on the amount of stuff in it?
+const paintbox_x = 250, paintbox_height = 40;
+const paintbox_width = 250; //Should this be based on the amount of stuff in it?
 let traytab_path = null, paintbox_path = null;
 let dragging = null, dragbasex = 50, dragbasey = 10;
 
