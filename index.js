@@ -313,6 +313,7 @@ function make_flag_flags() {
 			const f = flags[attr][value];
 			f.type = "flag"; f.template = true;
 			f.x = x += 30; f.y = 2;
+			f.attr = attr; f.value = value;
 			specials.push(f);
 		}
 		x += 20;
@@ -454,8 +455,8 @@ function clone_template(t, par) {
 	if (t === "") return "";
 	const el = {...t};
 	delete el.template;
-	if (el.type === "flag") el.type = "dragflag"; //Hack - dragging a flag unfurls it.
-	actives.push(el);
+	if (el.type === "flag") el.type = "dragflag"; //Hack - dragging a flag unfurls it (and doesn't add an active element)
+	else actives.push(el);
 	if (par && el.parent) el.parent[0] = par;
 	for (let attr of types[el.type].children || [])
 		el[attr] = el[attr].map(e => clone_template(e, el));
@@ -548,6 +549,18 @@ canvas.addEventListener("pointerup", e => {
 	if (!dragging) return;
 	e.target.releasePointerCapture(e.pointerId);
 	//Recalculate connections only on pointer-up. (Or would it be better to do it on pointer-move?)
+	if (dragging.type === "dragflag") {
+		//Special: Dragging a flag applies it to the anchor, or discards it. Nothing else.
+		let x = e.offsetX - dragbasex, y = e.offsetY - dragbasey;
+		const anchor = actives[0]; //assert anchor.type === "anchor"
+		if (x >= anchor.x - 10 && x <= anchor.x + 220 && y >= anchor.y - 10 &&
+				y <= anchor.y + element_path(anchor).totheight + 10) {
+			anchor[dragging.attr] = dragging.value;
+		}
+		dragging = null;
+		repaint();
+		return;
+	}
 	let parent, conn;
 	[dragging.x, dragging.y, parent, conn] = snap_to_elements(e.offsetX - dragbasex, e.offsetY - dragbasey);
 	if (dragging.x > template_x - 100) {
