@@ -23,6 +23,13 @@ An "Element" is anything that can be interacted with. An "Active" is something t
 and is everything that isn't in the Favs/Trays/Specials.
   - The anchor point may belong in Actives or may belong in Specials. Uncertain.
 
+FIXME: If something isn't properly recognized and then message is an object, it's not rendering right.
+
+FIXME: Bug with favs dedup
+
+TODO: If you drop a tree into favs, should you be able to drag it from anywhere? (Same if template.)
+Should it grab the whole tree or just the subtree you clicked on? (Probably the former.)
+
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
 cannot be represented in JSON (eg exact pixel positions, and unanchored elements) will be lost on save/load.
