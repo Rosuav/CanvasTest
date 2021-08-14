@@ -282,7 +282,7 @@ const trashcan = {type: "anchor", color: "#999999", label: "Trash - drop here to
 	desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
-function refactor() {facts = [].concat(favourites, trays[current_tray], specials);} refactor();
+function refactor() {facts = [].concat(favourites, trays[current_tray], specials);}
 const tab_width = 15, tab_height = 80;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
@@ -311,13 +311,14 @@ function make_flag_flags() {
 	for (let attr in flags) {
 		for (let value in flags[attr]) {
 			const f = flags[attr][value];
-			f.type = "flag"; f.x = x += 30; f.y = 2;
+			f.type = "flag"; f.template = true;
+			f.x = x += 30; f.y = 2;
 			specials.push(f);
 		}
 		x += 20;
 	}
 }
-make_flag_flags();
+make_flag_flags(); refactor();
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -419,7 +420,6 @@ function repaint() {
 	ctx.fill(paintbox_path);
 	ctx.stroke(paintbox_path);
 	ctx.restore();
-	draw_at(ctx, {type: "dragflag", icon: "🔒", x: paintbox_x + 30, y: 50, desc: "Access: None"});
 	specials.forEach(el => draw_at(ctx, el));
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
@@ -454,6 +454,7 @@ function clone_template(t, par) {
 	if (t === "") return "";
 	const el = {...t};
 	delete el.template;
+	if (el.type === "flag") el.type = "dragflag"; //Hack - dragging a flag unfurls it.
 	actives.push(el);
 	if (par && el.parent) el.parent[0] = par;
 	for (let attr of types[el.type].children || [])
