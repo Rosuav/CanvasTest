@@ -30,8 +30,6 @@ An "Element" is anything that can be interacted with. An "Active" is something t
 and is everything that isn't in the Favs/Trays/Specials.
   - The anchor point may belong in Actives or may belong in Specials. Uncertain.
 
-FIXME: If something isn't properly recognized and then message is an object, it's not rendering right.
-
 TODO: If you drop a tree into favs, should you be able to drag it from anywhere? (Same if template.)
 Should it grab the whole tree or just the subtree you clicked on? (Probably the former.)
 
