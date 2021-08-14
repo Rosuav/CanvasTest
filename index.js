@@ -3,7 +3,6 @@
 * Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
-* Templates with children - good for favs, maybe also for example cooldown usage?
 * Conditionals are stubbed out - need their 1-2 values
   - Need to know somehow which ones have 1 and which have 2
 * Saving of favourites. ??? WHERE???
