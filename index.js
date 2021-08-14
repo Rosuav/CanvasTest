@@ -18,6 +18,14 @@
   - More builtin types
 * Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
   have an old command in this form, edit and save it in the default or raw UIs, then open this one.
+* Toolbar for paint
+  - Trapezoid at y=0, anchoring to top (like a tab but facing the other way
+  - Each paint is a set of icons for its options
+  - Paint that applies only to the anchor is one shape (eg circle), paint that applies to any element is
+    another (eg square). Each one has N+1 targets (same as child connection points) for paint. Anchor
+    gets both types of targets.
+  - Drag from paint to anywhere over the element and it snaps to the target for that type.
+  - Some paint will have effect on the subtree. For now, this will not be visually shown.
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
