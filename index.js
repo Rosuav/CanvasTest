@@ -6,6 +6,17 @@
 * Saving of favourites. ??? WHERE???
 * Builtins (and some anchor types) provide replaceable values.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them??
+* Message attributes still to implement:
+  - dest="/web", target
+  - dest="/w", target
+  - dest="/set", target, action="add" or ""
+  - access="mod", "vip", "none" -- paint!
+  - visibility="hidden" -- paint!
+  - casefold on all string-based conditionals
+  - voice=ID -- paint!
+  - aliases?? Edit the anchor??
+* Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
+  have an old command in this form, edit and save it in the default or raw UIs, then open this one.
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
