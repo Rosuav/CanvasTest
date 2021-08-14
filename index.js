@@ -263,6 +263,7 @@ const template_x = tray_x - 210, template_y = 10;
 const paintbox_x = 230, paintbox_height = 25;
 const paintbox_width = template_x - paintbox_x - tab_width * 2; //Should this be based on the amount of stuff in it?
 let traytab_path = null, paintbox_path = null;
+let dragging = null, dragbasex = 50, dragbasey = 10;
 
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -361,7 +362,8 @@ function repaint() {
 	ctx.fill(paintbox_path);
 	ctx.stroke(paintbox_path);
 	ctx.restore();
-	actives.forEach(el => el.parent || draw_at(ctx, el));
+	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
+	if (dragging) draw_at(ctx, dragging); //Anything being dragged gets drawn last, ensuring it is at the top of z-order.
 }
 repaint();
 
@@ -399,7 +401,6 @@ function clone_template(t, par) {
 	return el;
 }
 
-let dragging = null, dragbasex = 50, dragbasey = 10;
 canvas.addEventListener("pointerdown", e => {
 	if (e.button) return; //Only left clicks
 	e.preventDefault();
