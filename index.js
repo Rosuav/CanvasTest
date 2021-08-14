@@ -306,7 +306,19 @@ const flags = {
 		"hidden": {icon: "🌚", desc: "Secret command"},
 	},
 };
-	
+function make_flag_flags() {
+	let x = paintbox_x;
+	for (let attr in flags) {
+		for (let value in flags[attr]) {
+			const f = flags[attr][value];
+			f.type = "flag"; f.x = x += 30; f.y = 2;
+			specials.push(f);
+		}
+		x += 20;
+	}
+}
+make_flag_flags();
+
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
 	if (reposition) {el.x = parent.x + reposition.x; el.y = parent.y + reposition.y;}
@@ -392,7 +404,7 @@ function repaint() {
 		ctx.stroke(traytab_path);
 		ctx.restore();
 	}
-	render(specials, spec_y + 25);
+	trashcan.x = template_x; trashcan.y = spec_y + 25;
 
 	if (!paintbox_path) {
 		paintbox_path = new Path2D;
@@ -406,15 +418,9 @@ function repaint() {
 	ctx.fillStyle = "#efdbb2";
 	ctx.fill(paintbox_path);
 	ctx.stroke(paintbox_path);
-	ctx.font = "12px sans"; ctx.fillStyle = "#00aa00";
-	ctx.fillText("🔒", 25, 17);
-	ctx.fillText("🗡", 45, 17);
-	ctx.fillText("💎", 65, 17);
-	ctx.fillText("👪", 85, 17);
-	ctx.fillText("🌞", 125, 17);
-	ctx.fillText("🌚", 145, 17);
 	ctx.restore();
 	draw_at(ctx, {type: "dragflag", icon: "🔒", x: paintbox_x + 30, y: 50, desc: "Access: None"});
+	specials.forEach(el => draw_at(ctx, el));
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
 	if (dragging) draw_at(ctx, dragging); //Anything being dragged gets drawn last, ensuring it is at the top of z-order.
