@@ -64,37 +64,37 @@ const types = {
 	},
 	builtin_shoutout: {
 		color: "#ee77ee", children: ["message"], label: el => "Shoutout",
-		params: [{attr: "builtin", values: "shoutout"}],
+		params: [{attr: "builtin", values: "shoutout"}, {attr: "builtin_param", label: "Channel name"}],
 		typedesc: "Fetch information about another channel and what it has recently streamed",
 	},
 	builtin_calc: {
 		color: "#ee77ee", children: ["message"], label: el => "Calculator",
-		params: [{attr: "builtin", values: "calc"}],
+		params: [{attr: "builtin", values: "calc"}, {attr: "builtin_param", label: "Expression"}],
 		typedesc: "Perform arithmetic calculations",
 	},
 	conditional_string: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
-		params: [{attr: "conditional", values: "string"}],
+		params: [{attr: "conditional", values: "string"}, {attr: "expr1", label: "Expression 1"}, {attr: "expr2", label: "Expression 2"}],
 		typedesc: "Make a decision - if THIS is THAT, do one thing, otherwise do something else.",
 	},
 	conditional_contains: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String includes", "Otherwise:"],
-		params: [{attr: "conditional", values: "contains"}],
+		params: [{attr: "conditional", values: "contains"}, {attr: "expr1", label: "Needle"}, {attr: "expr2", label: "Haystack"}],
 		typedesc: "Make a decision - if Needle in Haystack, do one thing, otherwise do something else.",
 	},
 	conditional_regexp: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Regular expression", "Otherwise:"],
-		params: [{attr: "conditional", values: "regexp"}],
+		params: [{attr: "conditional", values: "regexp"}, {attr: "expr1", label: "Reg Exp"}, {attr: "expr2", label: "Compare against"}],
 		typedesc: "Make a decision - if regular expression, do one thing, otherwise do something else.",
 	},
 	conditional_number: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Numeric computation", "Otherwise:"],
-		params: [{attr: "conditional", values: "number"}],
+		params: [{attr: "conditional", values: "number"}, {attr: "expr1", label: "Expression"}],
 		typedesc: "Make a decision - if the result's nonzero, do one thing, otherwise do something else.",
 	},
 	cooldown: {
 		color: "#aacc55", children: ["message", "otherwise"], label: el => [el.cdlength + "-second cooldown", "If on cooldown:"],
-		params: [{attr: "cdlength", label: "Delay (seconds)", values: [1, 7200, 1]}],
+		params: [{attr: "cdlength", label: "Delay (seconds)", values: [1, 7200, 1]}, {attr: "cdname", label: "Tag (optional)"}],
 		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
 	},
 	random: {
@@ -164,7 +164,7 @@ const trays = {
 		//{type: "text", value: "Shh this is a whisper"}, //TODO
 		{type: "delay", delay: "2"},
 		{type: "random"},
-		{type: "cooldown", cdlength: "30"},
+		{type: "cooldown", cdlength: "30", cdname: ""},
 	],
 	Builtins: [
 		{type: "builtin_uptime"},
@@ -172,10 +172,10 @@ const trays = {
 		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
 	],
 	Conditionals: [
-		{type: "conditional_string"},
-		{type: "conditional_contains"},
-		{type: "conditional_number"},
-		//NOTE: Even though they're internally conditionals too, cooldowns don't belong here
+		{type: "conditional_string", expr1: "%s", expr2: "demo"},
+		{type: "conditional_contains", expr1: "/foo/bar/quux/", expr2: "/%s/"},
+		{type: "conditional_number", expr1: "$deaths$ > 10"},
+		//NOTE: Even though they're internally conditionals too, cooldowns don't belong in this tray
 	],
 };
 const tray_tabs = [
