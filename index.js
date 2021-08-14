@@ -5,7 +5,7 @@
   but maybe it'd be better to have a more visually obvious indicator?
 * Saving of favourites. ??? WHERE???
 * Builtins (and some anchor types) provide replaceable values.
-* Favs with children push or cross the edge of the box - functional but ugly. Collapse them??
+* Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
   - dest="/web", target
   - dest="/w", target
