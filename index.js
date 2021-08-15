@@ -647,8 +647,7 @@ canvas.addEventListener("dblclick", e => {
 				const [min, max, step] = param.values;
 				control = INPUT({...id, type: "number", min, max, step, value: el[param.attr]});
 			} else {
-				//Not working, FIXME
-				control = SELECT(id, param.values.map(v => OPTION({checked: v === el[param.attr]}, v))); //TODO: Allow value and description to differ
+				control = SELECT(id, param.values.map(v => OPTION({selected: v === el[param.attr]}, v))); //TODO: Allow value and description to differ
 			}
 			break;
 			case "undefined": control = INPUT({...id, value: el[param.attr] || "", size: 50}); break;
