@@ -11,7 +11,6 @@
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
   - dest="/web", target
-  - dest="/w", target
   - dest="/set", target, action="add" or ""
     - For each of these, provide a small number of classes that do this with one message
     - Have a fallback like unknown-builtin to cope with any others (it won't be in the toolbox).
