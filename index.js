@@ -1,6 +1,5 @@
 /* TODO
 
-* Drag paint to element to set attributes (eg a "voice" paint)
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
 * Saving of favourites. ??? WHERE???
