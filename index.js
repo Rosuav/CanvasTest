@@ -20,21 +20,6 @@
   - aliases?? Edit the anchor??
 * Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
   have an old command in this form, edit and save it in the default or raw UIs, then open this one.
-* Toolbar for paint
-  - Trapezoid at y=0, anchoring to top (like a tab but facing the other way
-  - Each paint is a set of icons for its options
-  - Paint that applies only to the anchor is one shape (eg circle), paint that applies to any element is
-    another (eg square). Each one has N+1 targets (same as child connection points) for paint. Anchor
-    gets both types of targets.
-  - Drag from paint to anywhere over the element and it snaps to the target for that type.
-  - Some paint will have effect on the subtree. For now, this will not be visually shown.
-* Paint can now be flags. Because, internally, they're called that anyway.
-  - In the toolbox and on the command, they are represented with icons (or emoji)
-  - While being dragged, or possibly when clicked on, unfurl the flag to show a short description.
-  - Flags mount on top of the anchor. They unfurl to the right (since I'm assuming English text here).
-  - While being dragged, is element. Otherwise, is not. Dropping needs to apply flag and dispose of
-    dragging. Painting needs to show all flags (in a consistent order).
-  - Snap to position?
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
