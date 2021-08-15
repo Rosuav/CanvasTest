@@ -659,7 +659,7 @@ canvas.addEventListener("dblclick", e => {
 	DOM("#properties").showModal();
 });
 
-on("input", "#properties input", e => set_content("#properties form button", "Apply changes"));
+on("input", "#properties [name]", e => set_content("#properties form button", "Apply changes"));
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
