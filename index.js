@@ -703,6 +703,7 @@ function matches(param, val) {
 }
 const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to array here than to collect them afterwards
 function message_to_element(msg) {
+	if (msg === "") return "";
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
 	if (Array.isArray(msg)) switch (msg.length) {
 		case 0: return ""; //Empty array is an empty message
@@ -744,12 +745,12 @@ on("click", "#open_json", e => {
 
 function load_message(msg) {
 	actives.splice(1); //Truncate
+	if (typeof msg === "string" || Array.isArray(msg)) msg = {message: msg};
 	for (let attr in flags) {
 		actives[0][attr] = msg[attr] || "";
 		delete msg[attr];
 	}
-	const el = message_to_element(msg);
-	actives[0].message = ensure_blank(arrayify(el));
+	actives[0].message = ensure_blank(arrayify(msg.message)).map(message_to_element);
 	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
 	refactor(); repaint();
 }
