@@ -117,6 +117,11 @@ const types = {
 	},
 	builtin_other: {
 		color: "#ee77ee", children: ["message"], label: el => "Unknown Builtin: " + el.builtin,
+		params: [{attr: "builtin", label: "Builtin name"}, {attr: "builtin_param", label: "Parameter"}],
+		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
+	},
+	builtin_other2: { //TODO: Merge other and other2 by making the param optional
+		color: "#ee77ee", children: ["message"], label: el => "Unknown Builtin: " + el.builtin,
 		params: [{attr: "builtin", label: "Builtin name"}],
 		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
 	},
@@ -164,6 +169,10 @@ const types = {
 		color: "#77eeee", label: el => el.message,
 		params: [{attr: "message", label: "Text"}],
 		typedesc: "Send a message in the channel",
+	},
+	group: {
+		color: "#77eeee", children: ["message"], label: el => "Group",
+		typedesc: "Group some elements for convenience. Has no inherent effect.",
 	},
 	flag: {
 		color: "#aaddff", label: el => el.icon,
@@ -686,7 +695,7 @@ function matches(param, val) {
 			const num = parseFloat(val);
 			const [min, max, step] = param.values;
 			return num >= min && min <= max && !((num - min) % step);
-		} else returntype.values.includes(val);
+		} else return type.values.includes(val);
 		case "undefined": return typeof val === "string";
 		case "string": return param.values === val;
 		default: return false;
@@ -695,7 +704,11 @@ function matches(param, val) {
 const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to array here than to collect them afterwards
 function message_to_element(msg) {
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
-	if (Array.isArray(msg)) return msg.map(message_to_element);
+	if (Array.isArray(msg)) switch (msg.length) {
+		case 0: return ""; //Empty array is an empty message
+		case 1: return message_to_element(msg[0]);
+		default: return new_elem({type: "group", message: msg.map(message_to_element)});
+	}
 	//TODO: If there are any flags set that can apply to subelements, add an element that carries them
 	for (let typename in types) {
 		const type = types[typename];
@@ -713,7 +726,7 @@ function message_to_element(msg) {
 		}
 	}
 	if (msg.message) return message_to_element(msg.message);
-	return new_elem({type: "text", color: "#ff0000", label: "Shouldn't happen", value: "Shouldn't happen"});
+	return new_elem({type: "text", value: "Shouldn't happen"});
 }
 
 on("click", "#open_json", e => {
