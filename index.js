@@ -150,10 +150,20 @@ const types = {
 		params: [{attr: "mode", label: "Randomize", values: "random"}],
 		typedesc: "Choose one child at random and show it",
 	},
+	whisper_back: {
+		color: "#99ffff", label: el => "🤫 " + el.message,
+		params: [{attr: "dest", values: "/w"}, {attr: "target", values: "$$"}, {attr: "message", label: "Text"}],
+		typedesc: "Whisper to the person who ran the command",
+	},
+	whisper_other: {
+		color: "#99ffff", children: ["message"], label: el => "🤫 to " + el.target,
+		params: [{attr: "dest", values: "/w"}, {attr: "target", label: "Person to whisper to"}],
+		typedesc: "Choose one child at random and show it",
+	},
 	text: {
 		color: "#77eeee", label: el => el.message,
 		params: [{attr: "message", label: "Text"}],
-		typedesc: "Send a message in the channel", //TODO: Make other types that, as well as having editable text, set flags eg "Whisper"
+		typedesc: "Send a message in the channel",
 	},
 	flag: {
 		color: "#aaddff", label: el => el.icon,
@@ -227,12 +237,12 @@ const favourites = [];
 const trays = {
 	Default: [
 		{type: "text", message: "Sample text message"},
-		//{type: "text", value: "Shh this is a whisper"}, //TODO
 		{type: "delay", delay: "2"},
 		{type: "random"},
 		{type: "cooldown", cdlength: "30", cdname: ""},
 	],
-	Builtins: [
+	Advanced: [
+		{type: "whisper_back", message: "Shh! This is a whisper!"},
 		{type: "builtin_uptime"},
 		{type: "builtin_shoutout", builtin_param: "%s"},
 		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
@@ -246,7 +256,7 @@ const trays = {
 };
 const tray_tabs = [
 	{name: "Default", color: "#efdbb2"},
-	{name: "Builtins", color: "#f7bbf7"},
+	{name: "Advanced", color: "#f7bbf7"},
 	{name: "Conditionals", color: "#bbbbf7"},
 ];
 function make_template(el, par) {
@@ -664,7 +674,7 @@ function element_to_message(el) {
 	if (type.children) for (let attr of type.children) {
 		ret[attr] = el[attr].filter(e => e !== "").map(element_to_message);
 	}
-	if (type.params) type.params.forEach(p => ret[p.attr] = el[p.attr]);
+	if (type.params) type.params.forEach(p => ret[p.attr] = typeof p.values === "string" ? p.values : el[p.attr]);
 	return ret;
 }
 
