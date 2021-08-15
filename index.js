@@ -245,18 +245,18 @@ const trays = { };
 const tray_tabs = [
 	{name: "Default", color: "#efdbb2", items: [
 		{type: "text", message: "Sample text message"},
-		{type: "delay", delay: "2"},
 		{type: "random"},
+		{type: "conditional_string", expr1: "%s", expr2: "demo"},
 		{type: "cooldown", cdlength: "30", cdname: ""},
 	]},
 	{name: "Advanced", color: "#f7bbf7", items: [
 		{type: "whisper_back", message: "Shh! This is a whisper!"},
+		{type: "delay", delay: "2"},
 		{type: "builtin_uptime"},
 		{type: "builtin_shoutout", builtin_param: "%s"},
 		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
 	]},
 	{name: "Conditionals", color: "#bbbbf7", items: [
-		{type: "conditional_string", expr1: "%s", expr2: "demo"},
 		{type: "conditional_contains", expr1: "/foo/bar/quux/", expr2: "/%s/"},
 		{type: "conditional_number", expr1: "$deaths$ > 10"},
 		//NOTE: Even though they're internally conditionals too, cooldowns don't belong in this tray
