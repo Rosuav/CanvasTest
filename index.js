@@ -95,8 +95,8 @@ const types = {
 	builtin_giveaway: {
 		color: "#ee77ee", children: ["message"], label: el => "Giveaway tools",
 		params: [
-			{attr: "builtin", values: "mpn"},
-			{attr: "builtin_param", values: ["refund", "status"]},
+			{attr: "builtin", values: "giveaway"},
+			{attr: "builtin_param", label: "Action", values: ["refund", "status"]},
 		],
 		typedesc: "Handle giveaways via channel point redemptions",
 	},
@@ -647,7 +647,8 @@ canvas.addEventListener("dblclick", e => {
 				const [min, max, step] = param.values;
 				control = INPUT({...id, type: "number", min, max, step, value: el[param.attr]});
 			} else {
-				control = SELECT(id, param.values.map(v => OPTION(v))); //TODO: Allow value and description to differ
+				//Not working, FIXME
+				control = SELECT(id, param.values.map(v => OPTION({checked: v === el[param.attr]}, v))); //TODO: Allow value and description to differ
 			}
 			break;
 			case "undefined": control = INPUT({...id, value: el[param.attr] || "", size: 50}); break;
@@ -695,7 +696,7 @@ function matches(param, val) {
 			const num = parseFloat(val);
 			const [min, max, step] = param.values;
 			return num >= min && min <= max && !((num - min) % step);
-		} else return type.values.includes(val);
+		} else return param.values.includes(val);
 		case "undefined": return typeof val === "string";
 		case "string": return param.values === val;
 		default: return false;
