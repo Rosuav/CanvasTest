@@ -15,8 +15,6 @@
   - dest="/set", target, action="add" or ""
     - For each of these, provide a small number of classes that do this with one message
     - Have a fallback like unknown-builtin to cope with any others (it won't be in the toolbox).
-  - access="mod", "vip", "none" -- paint!
-  - visibility="hidden" -- paint!
   - casefold on all string-based conditionals
   - voice=ID -- paint? What if it's set on just one message - how should that be imported?
     - Maybe have an element that changes voice for its children, but not in toolbox??
