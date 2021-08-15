@@ -163,7 +163,7 @@ const types = {
 	whisper_other: {
 		color: "#99ffff", children: ["message"], label: el => "🤫 to " + el.target,
 		params: [{attr: "dest", values: "/w"}, {attr: "target", label: "Person to whisper to"}],
-		typedesc: "Choose one child at random and show it",
+		typedesc: "Whisper to a specific person",
 	},
 	text: {
 		color: "#77eeee", label: el => el.message,
