@@ -660,11 +660,16 @@ function make_message_editor(id, el) {
 		vars_avail.unshift(par.provides, types[par.type].provides);
 	}
 	const allvars = Object.assign({}, ...vars_avail);
-	return DIV([
-		DIV({className: "buttonbox"}, Object.entries(allvars).map(([v, d]) => BUTTON({title: d}, v))),
+	return DIV({className: "msgedit"}, [
+		DIV({className: "buttonbox"}, Object.entries(allvars).map(([v, d]) => BUTTON({type: "button", title: d, className: "insertvar", "data-insertme": v}, v))),
 		TEXTAREA({...id, rows: 10, cols: 60}, el.message || ""),
 	]);
 }
+on("mousedown", ".insertvar", e => e.preventDefault()); //Prevent buttons from taking focus when clicked
+on("click", ".insertvar", e => {
+	const mle = e.match.closest(".msgedit").querySelector("textarea");
+	mle.setRangeText(e.match.dataset.insertme, mle.selectionStart, mle.selectionEnd, "end");
+});
 
 let propedit = null;
 canvas.addEventListener("dblclick", e => {
