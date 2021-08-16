@@ -687,12 +687,11 @@ canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
 	const el = element_at_position(e.offsetX, e.offsetY);
 	if (!el) return;
-	if (el.template) return; //TODO: Pop up some info w/o allowing changes
 	propedit = el;
 	const type = types[el.type];
 	set_content("#typedesc", type.typedesc || el.desc);
 	set_content("#params", (type.params||[]).map(param => {
-		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr};
+		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr, disabled: el.template};
 		switch (typeof param.values) {
 			//"object" has to mean array, we don't support any other type
 			case "object": if (param.values.length === 3 && typeof param.values[0] === "number") {
@@ -721,7 +720,7 @@ on("input", "#properties [name]", e => set_content("#saveprops", "Apply changes"
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];
-	if (type.params) for (let param of type.params) {
+	if (!propedit.template && type.params) for (let param of type.params) {
 		const val = document.getElementById("value-" + param.attr);
 		if (val) {
 			//TODO: Validate based on the type, to prevent junk data from hanging around until save
