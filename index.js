@@ -138,7 +138,10 @@ const types = {
 		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
 	},
 	conditional_string: {
-		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String comparison", "Otherwise:"],
+		color: "#7777ee", children: ["message", "otherwise"], label: el => [
+			el.expr1 && el.expr2 ? el.expr1 + " == " + el.expr2 : "String comparison",
+			"Otherwise:",
+		],
 		params: [{attr: "conditional", values: "string"}, {attr: "expr1", label: "Expression 1"}, {attr: "expr2", label: "Expression 2"}],
 		typedesc: "Make a decision - if THIS is THAT, do one thing, otherwise do something else.",
 	},
@@ -266,7 +269,7 @@ const tray_tabs = [
 	{name: "Default", color: "#efdbb2", items: [
 		{type: "text", message: "Sample text message"},
 		{type: "random"},
-		{type: "conditional_string", expr1: "%s", expr2: "demo"},
+		{type: "conditional_string", expr1: "%s"},
 		{type: "cooldown", cdlength: "30", cdname: ""},
 	]},
 	{name: "Advanced", color: "#f7bbf7", items: [
