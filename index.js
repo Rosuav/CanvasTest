@@ -31,6 +31,10 @@ Eventually this will go into StilleBot as an alternative command editor. Saving 
 JSON format that the current editor uses, making them completely compatible. Note that information that
 cannot be represented in JSON (eg exact pixel positions, and unanchored elements) will be lost on save/load.
 
+TODO: When integrated, fetch vars_provided from each builtin and use that to define the provides blocks for
+each class that sets a builtin. Also, if the anchor is a special trigger, provides should be set on that
+anchor based on SPECIALS and SPECIAL_PARAMS from addcmd.pike. (Optionally filter out deprecateds?)
+
 There will always be an anchor whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
@@ -74,16 +78,31 @@ const types = {
 		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
 		params: [{attr: "builtin", values: "uptime"}],
 		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
+		provides: {
+			"{uptime}": "Number of seconds the channel has been online, or 0 if offline",
+			"{channel}": "Channel name (may later become the display name)",
+		},
 	},
 	builtin_shoutout: {
 		color: "#ee77ee", children: ["message"], label: el => "Shoutout",
 		params: [{attr: "builtin", values: "shoutout"}, {attr: "builtin_param", label: "Channel name"}],
 		typedesc: "Fetch information about another channel and what it has recently streamed",
+		provides: {
+			"{url}": "Channel URL, or blank if the user wasn't found",
+			"{name}": "Display name of the user",
+			"{category}": "Current or last-seen category (game)",
+			"{catdesc}": "Category in a human-readable form, eg 'playing X' or 'creating Art'",
+			"{title}": "Current or last-seen stream title",
+		},
 	},
 	builtin_calc: {
 		color: "#ee77ee", children: ["message"], label: el => "Calculator",
 		params: [{attr: "builtin", values: "calc"}, {attr: "builtin_param", label: "Expression"}],
 		typedesc: "Perform arithmetic calculations",
+		provides: {
+			"{error}": "Blank if all is well, otherwise an error message",
+			"{result}": "The result of the calculation",
+		},
 	},
 	builtin_hypetrain: {
 		color: "#ee77ee", children: ["message"], label: el => "Hype train status",
@@ -238,7 +257,13 @@ function element_path(element) {
 }
 const actives = [
 	{type: "anchor", x: 10, y: 25, label: "When !uptime is typed...", message: [""],
-		desc: "This is how everything starts. Drag flags onto this to apply them."},
+		desc: "This is how everything starts. Drag flags onto this to apply them.",
+		provides: {
+			"{param}": "Anything typed after the command name",
+			"{username}": "Name of the user who entered the command",
+			"{@mod}": "1 if the command was triggered by a mod/broadcaster, 0 if not",
+		},
+	},
 ];
 const favourites = [];
 const trays = { };
