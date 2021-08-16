@@ -38,6 +38,10 @@ dialog > section > div {
 	gap: 5px;
 	margin: 5px 0;
 }
+.scrollcontext {
+	overflow: auto;
+	max-height: 606px;
+}
 </style>
 <script type=module src="index.js"></script>
 </head>
@@ -45,9 +49,9 @@ dialog > section > div {
 <main>
 <p>Drag elements around and snap them into position to build a command. Double-click an element to change its text etc.</p>
 <p><button id=open_json>Export/import</button></p>
-<canvas width=800 height=600>
+<div class=scrollcontext><canvas width=800 height=600>
 I guess you can't see my canvas?
-</canvas>
+</canvas></div>
 <dialog id=properties><section>
 <header><h3>Properties</h3><div><button type=button class=dialog_cancel>x</button><br><button type=button id=toggle_favourite>Fav</button></div></header>
 <div><form id=setprops method=dialog>

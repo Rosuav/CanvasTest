@@ -365,10 +365,12 @@ function make_flag_flags() {
 }
 make_flag_flags(); refactor();
 
+let max_descent = 0;
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
 	if (reposition) {el.x = parent.x + reposition.x; el.y = parent.y + reposition.y;}
 	const path = element_path(el);
+	max_descent = Math.max(max_descent, (el.y|0) + path.totheight);
 	const type = types[el.type];
 	ctx.save();
 	ctx.translate(el.x|0, el.y|0);
@@ -421,6 +423,7 @@ function boxed_set(set, color, desc, y) {
 
 function repaint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	max_descent = 600; //Base height, will never shrink shorter than this
 	tray_y = boxed_set(favourites, "#eeffee", "> Drop here to save favourites <", template_y);
 	//Draw the tabs down the side of the tray
 	let tab_y = tray_y + tab_width, curtab_y = 0, curtab_color = "#00ff00";
@@ -476,6 +479,7 @@ function repaint() {
 
 	actives.forEach(el => el.parent || el === dragging || draw_at(ctx, el));
 	if (dragging) draw_at(ctx, dragging); //Anything being dragged gets drawn last, ensuring it is at the top of z-order.
+	if (max_descent != canvas.height) {canvas.height = max_descent; repaint();}
 }
 repaint();
 
