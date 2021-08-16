@@ -3,7 +3,6 @@
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
 * Saving of favourites. ??? WHERE???
-* Builtins (and some anchor types) provide replaceable values.
 * Builtins need better explanation. Somehow.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
