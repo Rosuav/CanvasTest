@@ -7,6 +7,7 @@
   - For now, it's done in Local Storage.
   - Note that there is basically no validation, so you might get a bit of a mess if you fiddle.
 * Builtins need better explanation. Somehow.
+* Deduplicate a ton of data by getting it from the server instead of hard-coding.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
   - casefold on all string-based conditionals
