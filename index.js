@@ -40,7 +40,7 @@ editing (command, trigger, special, etc). Some anchors will offer information th
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
-const {LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA} = choc;
+const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
@@ -650,14 +650,20 @@ canvas.addEventListener("pointerup", e => {
 });
 
 function make_message_editor(id, el) {
-	const vars_avail = { };
+	//Collect up a list of parents in order from root to here
+	//We scan upwards, inserting parents before us, to ensure proper ordering.
+	//This keeps the display tidy (having {param} always first, for instance),
+	//but also ensures that wonky situations with vars overwriting each other
+	//will behave the way the back end would handle them.
+	const vars_avail = [];
 	for (let par = el; par; par = par.parent && par.parent[0]) {
-		if (par.provides) Object.assign(vars_avail, par.provides);
-		let tp = types[par.type].provides;
-		if (tp) Object.assign(vars_avail, tp);
+		vars_avail.unshift(par.provides, types[par.type].provides);
 	}
-	console.log(vars_avail);
-	return TEXTAREA({...id, rows: 10, cols: 60}, el.message || "");
+	const allvars = Object.assign({}, ...vars_avail);
+	return DIV([
+		DIV({className: "buttonbox"}, Object.entries(allvars).map(([v, d]) => BUTTON({title: d}, v))),
+		TEXTAREA({...id, rows: 10, cols: 60}, el.message || ""),
+	]);
 }
 
 let propedit = null;
@@ -688,11 +694,11 @@ canvas.addEventListener("dblclick", e => {
 		}
 		return control && TR([TD(LABEL({htmlFor: "value-" + param.attr}, param.label + ": ")), TD(control)]);
 	}));
-	set_content("#properties form button", "Close");
+	set_content("#saveprops", "Close");
 	DOM("#properties").showModal();
 });
 
-on("input", "#properties [name]", e => set_content("#properties form button", "Apply changes"));
+on("input", "#properties [name]", e => set_content("#saveprops", "Apply changes"));
 
 on("submit", "#setprops", e => {
 	const type = types[propedit.type];

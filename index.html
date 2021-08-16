@@ -32,6 +32,12 @@ dialog > section > div {
 	position: relative;
 	right: -8px; top: -8px;
 }
+
+.buttonbox {
+	display: flex;
+	gap: 5px;
+	margin: 5px 0;
+}
 </style>
 <script type=module src="index.js"></script>
 </head>
@@ -47,7 +53,7 @@ I guess you can't see my canvas?
 <div><form id=setprops method=dialog>
 <table id=params></table>
 <p id=typedesc>This is a generic thing of a generic type.</p>
-<p><button>Close</button></p>
+<p><button id=saveprops>Close</button></p>
 </form></div>
 </section></dialog>
 <dialog id=jsondlg><section>
