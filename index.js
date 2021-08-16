@@ -783,7 +783,7 @@ function load_message(msg) {
 		actives[0][attr] = msg[attr] || "";
 		delete msg[attr];
 	}
-	actives[0].message = ensure_blank(arrayify(msg.message)).map(message_to_element);
+	actives[0].message = ensure_blank(arrayify(msg)).map(message_to_element);
 	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
 	refactor(); repaint();
 }
