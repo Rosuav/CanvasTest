@@ -267,7 +267,7 @@ function element_path(element) {
 	return path_cache[cache_key] = {path, connections, totheight: y, labelpos};
 }
 const actives = [
-	{type: "anchor", x: 10, y: 25, label: "When !uptime is typed...", message: [""],
+	{type: "anchor", x: 10, y: 25, label: "When !demo is typed...", message: [""],
 		desc: "This is how everything starts. Drag flags onto this to apply them.",
 		provides: {
 			"{param}": "Anything typed after the command name",
@@ -864,7 +864,7 @@ on("submit", "#jsondlg form", e => {
 	load_message(JSON.parse(DOM("#jsontext").value));
 	e.match.closest("dialog").close();
 });
-load_message({"builtin":"uptime","builtin_param":"%s","message":{"conditional":"string","expr1":"{uptime}","expr2":"0","message":"Channel is currently offline.","otherwise":"@$$: Channel {channel} has been online for {uptime|time_english} or {uptime|time_hms}."}});
+//load_message({"builtin":"uptime","builtin_param":"%s","message":{"conditional":"string","expr1":"{uptime}","expr2":"0","message":"Channel is currently offline.","otherwise":"@$$: Channel {channel} has been online for {uptime|time_english} or {uptime|time_hms}."}});
 
 //DBU violation, fix if you feel like it
 function save_favourites() {
