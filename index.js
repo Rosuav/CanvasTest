@@ -51,6 +51,8 @@ const ensure_blank = arr => {
 	return arr;
 };
 
+function required(val) {return !!val;} //Filter that demands that an attribute be present
+
 const types = {
 	anchor: {
 		color: "#ffff00", fixed: true, children: ["message"],
@@ -117,12 +119,12 @@ const types = {
 	},
 	builtin_mpn: {
 		color: "#ee77ee", children: ["message"], label: el => "Multi-Player Notepad",
-		params: [{attr: "builtin", values: "mpn"}], //Not currently editable. Needs a lot of work.
+		params: [{attr: "builtin", values: "mpn"}, {attr: "builtin_param", label: "Action"}], //Not currently editable. Needs a lot of work.
 		typedesc: "Manipulate MPN documents. Not well supported yet.",
 	},
 	builtin_pointsrewards: {
 		color: "#ee77ee", children: ["message"], label: el => "Points Rewards",
-		params: [{attr: "builtin", values: "pointsrewards"}], //Not currently editable. Needs reward ID and a set of commands. Might not be worth doing properly.
+		params: [{attr: "builtin", values: "pointsrewards"}, {attr: "builtin_param", label: "Action"}], //Not currently editable. Needs reward ID and a set of commands. Might not be worth doing properly.
 		typedesc: "Manipulate channel point rewards",
 	},
 	builtin_transcoding: {
@@ -132,12 +134,7 @@ const types = {
 	},
 	builtin_other: {
 		color: "#ee77ee", children: ["message"], label: el => "Unknown Builtin: " + el.builtin,
-		params: [{attr: "builtin", label: "Builtin name"}, {attr: "builtin_param", label: "Parameter"}],
-		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
-	},
-	builtin_other2: { //TODO: Merge other and other2 by making the param optional
-		color: "#ee77ee", children: ["message"], label: el => "Unknown Builtin: " + el.builtin,
-		params: [{attr: "builtin", label: "Builtin name"}],
+		params: [{attr: "builtin", label: "Builtin name", values: required}, {attr: "builtin_param", label: "Parameter"}],
 		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
 	},
 	conditional_string: {
@@ -689,7 +686,7 @@ canvas.addEventListener("dblclick", e => {
 				control = SELECT(id, param.values.map(v => OPTION({selected: v === el[param.attr]}, v))); //TODO: Allow value and description to differ
 			}
 			break;
-			case "undefined":
+			case "undefined": case "function":
 				if (param.attr === "message") control = make_message_editor(id, el);
 				else control = INPUT({...id, value: el[param.attr] || "", size: 50});
 				break;
@@ -738,7 +735,8 @@ function matches(param, val) {
 			const [min, max, step] = param.values;
 			return num >= min && min <= max && !((num - min) % step);
 		} else return param.values.includes(val);
-		case "undefined": return typeof val === "string";
+		case "function": return param.values(val);
+		case "undefined": return typeof val === "string" || typeof val === "undefined";
 		case "string": return param.values === val;
 		default: return false;
 	}
