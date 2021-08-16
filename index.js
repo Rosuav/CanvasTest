@@ -35,7 +35,7 @@ editing (command, trigger, special, etc). Some anchors will offer information th
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
-const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA} = choc;
+const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA, LI, CODE} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
@@ -668,7 +668,7 @@ function make_message_editor(id, el) {
 	//will behave the way the back end would handle them.
 	const vars_avail = [];
 	for (let par = el; par; par = par.parent && par.parent[0]) {
-		vars_avail.unshift(par.provides, types[par.type].provides);
+		vars_avail.unshift(par.provides || types[par.type].provides);
 	}
 	const allvars = Object.assign({}, ...vars_avail);
 	return DIV({className: "msgedit"}, [
@@ -710,6 +710,9 @@ canvas.addEventListener("dblclick", e => {
 		}
 		return control && TR([TD(LABEL({htmlFor: "value-" + param.attr}, param.label + ": ")), TD(control)]);
 	}));
+	set_content("#providesdesc", Object.entries(el.provides || type.provides || {}).map(([v, d]) => LI([
+		CODE(v), ": " + d,
+	])));
 	set_content("#saveprops", "Close");
 	DOM("#properties").showModal();
 });
