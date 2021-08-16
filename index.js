@@ -9,9 +9,6 @@
 * Builtins need better explanation. Somehow.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
-  - dest="/set", target, action="add" or ""
-    - For each of these, provide a small number of classes that do this with one message
-    - Have a fallback like unknown-builtin to cope with any others (it won't be in the toolbox).
   - casefold on all string-based conditionals
   - voice=ID -- paint? What if it's set on just one message - how should that be imported?
     - Maybe have an element that changes voice for its children, but not in toolbox??
@@ -184,6 +181,17 @@ const types = {
 		params: [{attr: "dest", values: "/web"}, {attr: "target", label: "Recipient"}],
 		typedesc: "Leave a private message for someone",
 	},
+	set_variable: {
+		color: "#dd7777", label: el => `Set $${el.target}$ to ${el.message}`,
+		params: [{attr: "dest", values: "/set"}, {attr: "target", label: "Variable name"}, {attr: "message", label: "New value"}],
+		typedesc: "Change a variable. Can be accessed as $varname$ in this or any other command.",
+	},
+	incr_variable: {
+		color: "#dd7777", label: el => `Add ${el.message} to $${el.target}$`,
+		params: [{attr: "dest", values: "/set"}, {attr: "action", values: "add"},
+			{attr: "target", label: "Variable name"}, {attr: "message", label: "Increment by"}],
+		typedesc: "Update a variable. Can be accessed as $varname$ in this or any other command.",
+	},
 	text: {
 		color: "#77eeee", label: el => el.message,
 		params: [{attr: "message", label: "Text"}],
@@ -278,6 +286,8 @@ const tray_tabs = [
 	]},
 	{name: "Advanced", color: "#f7bbf7", items: [
 		{type: "whisper_back", message: "Shh! This is a whisper!"},
+		{type: "incr_variable", target: "deaths", message: "1"},
+		{type: "set_variable", target: "deaths", message: "0"},
 		{type: "builtin_uptime"},
 		{type: "builtin_shoutout", builtin_param: "%s"},
 		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
