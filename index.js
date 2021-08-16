@@ -22,9 +22,6 @@ An "Element" is anything that can be interacted with. An "Active" is something t
 and is everything that isn't in the Favs/Trays/Specials.
   - The anchor point may belong in Actives or may belong in Specials. Uncertain.
 
-TODO: If you drop a tree into favs, should you be able to drag it from anywhere? (Same if template.)
-Should it grab the whole tree or just the subtree you clicked on? (Probably the former.)
-
 Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
 JSON format that the current editor uses, making them completely compatible. Note that information that
 cannot be represented in JSON (eg exact pixel positions, and unanchored elements) will be lost on save/load.
@@ -468,15 +465,31 @@ function remove_child(childset, idx) {
 	childset.pop(); //assert returns ""
 }
 
+//Check if an element contains the given (x,y) position.
+//If this or any of its children contains it, return the child which does.
+function element_contains(el, x, y) {
+	if (el === "") return null; //Empty slots contain nothing.
+	if (ctx.isPointInPath(element_path(el).path, x - el.x, y - el.y)) return el;
+	for (let attr of types[el.type].children || [])
+		for (let child of el[attr] || []) {
+			let c = element_contains(child, x, y);
+			if (c) return c;
+		}
+	return null;
+}
+
 function element_at_position(x, y, filter) {
-	//Two loops to avoid constructing unnecessary arrays
 	for (let el of actives) {
+		//Actives check only themselves, because children of actives are themselves actives,
+		//and if you grab a child out of an element, it should leave its parent and go and
+		//cleave to its mouse cursor.
 		if (filter && !filter(el)) continue;
 		if (ctx.isPointInPath(element_path(el).path, x - el.x, y - el.y)) return el;
 	}
 	for (let el of facts) {
 		if (filter && !filter(el)) continue;
-		if (ctx.isPointInPath(element_path(el).path, x - el.x, y - el.y)) return el;
+		//With facts, also descend to children - but if one matches, return the top-level.
+		if (element_contains(el, x, y)) return el;
 	}
 }
 
