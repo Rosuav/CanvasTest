@@ -5,8 +5,6 @@
 * Saving of favourites. ??? WHERE???
 * Builtins (and some anchor types) provide replaceable values.
 * Builtins need better explanation. Somehow.
-* Alternate text editor? It can scan up the parents, collect all available braceys, and let you click to
-  insert. Maybe also include a few favourite emotes?
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
   - dest="/web", target
