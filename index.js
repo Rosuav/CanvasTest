@@ -40,7 +40,7 @@ editing (command, trigger, special, etc). Some anchors will offer information th
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
-const {LABEL, INPUT, SELECT, OPTION, TR, TD} = choc;
+const {LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
@@ -649,6 +649,10 @@ canvas.addEventListener("pointerup", e => {
 	repaint();
 });
 
+function make_message_editor(id, initial) {
+	return TEXTAREA({...id, rows: 10, cols: 60}, initial);
+}
+
 let propedit = null;
 canvas.addEventListener("dblclick", e => {
 	e.stopPropagation();
@@ -669,7 +673,10 @@ canvas.addEventListener("dblclick", e => {
 				control = SELECT(id, param.values.map(v => OPTION({selected: v === el[param.attr]}, v))); //TODO: Allow value and description to differ
 			}
 			break;
-			case "undefined": control = INPUT({...id, value: el[param.attr] || "", size: 50}); break;
+			case "undefined":
+				if (param.attr === "message") control = make_message_editor(id, el[param.attr]);
+				else control = INPUT({...id, value: el[param.attr] || "", size: 50});
+				break;
 			default: break; //incl fixed strings
 		}
 		return control && TR([TD(LABEL({htmlFor: "value-" + param.attr}, param.label + ": ")), TD(control)]);
