@@ -41,6 +41,7 @@ fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "for
 const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
+const FAV_BUTTON_TEXT = ["Fav ☆", "Fav ★"];
 
 const arrayify = x => Array.isArray(x) ? x : [x];
 const ensure_blank = arr => {
@@ -570,6 +571,7 @@ canvas.addEventListener("pointermove", e => {
 	repaint();
 });
 
+function content_only(arr) {return (arr||[]).filter(el => el);} //Filter out any empty strings or null entries
 //Check if two templates are functionally equivalent, based on saveable attributes
 function same_template(t1, t2) {
 	if (t1 === "" && t2 === "") return true;
@@ -579,12 +581,18 @@ function same_template(t1, t2) {
 	if (type.params) for (let p of type.params)
 		if (t1[p.attr] !== t2[p.attr]) return false;
 	for (let attr of type.children || []) {
-		const c1 = t1[attr], c2 = t2[attr];
+		const c1 = content_only(t1[attr]), c2 = content_only(t2[attr]);
 		if (c1.length !== c2.length) return false;
 		for (let i = 0; i < c1.length; ++i)
 			if (!same_template(c1[i], c2[i])) return false;
 	}
 	return true;
+}
+function is_favourite(el) {
+	for (let f of favourites) {
+		if (same_template(f, el)) return f;
+	}
+	return null;
 }
 
 canvas.addEventListener("pointerup", e => {
@@ -620,13 +628,8 @@ canvas.addEventListener("pointerup", e => {
 			//   - Remove the draggable element and add to favs.
 			//They all function the same way, though: remove the Active, add to Favourites,
 			//but deduplicate against all other Favourites.
-			let dupe = false;
 			make_template(dragging);
-			for (let f of favourites) {
-				if (same_template(f, dragging)) {dupe = true; break;}
-			}
-			if (!dupe) //In Python, this would be a for-else clause
-				favourites.push(dragging);
+			if (!is_favourite(dragging)) favourites.push(dragging);
 			refactor();
 			dragging = null; repaint();
 			return;
@@ -689,6 +692,7 @@ canvas.addEventListener("dblclick", e => {
 	if (!el) return;
 	propedit = el;
 	const type = types[el.type];
+	set_content("#toggle_favourite", FAV_BUTTON_TEXT[is_favourite(el) ? 1 : 0]);
 	set_content("#typedesc", type.typedesc || el.desc);
 	set_content("#params", (type.params||[]).map(param => {
 		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr, disabled: el.template};
@@ -714,6 +718,20 @@ canvas.addEventListener("dblclick", e => {
 	])));
 	set_content("#saveprops", "Close");
 	DOM("#properties").showModal();
+});
+
+on("click", "#toggle_favourite", e => {
+	const f = is_favourite(propedit);
+	if (f) {
+		favourites.splice(favourites.indexOf(f), 1);
+		set_content("#toggle_favourite", FAV_BUTTON_TEXT[0]);
+	}
+	else {
+		const t = {...propedit}; make_template(t);
+		favourites.push(t);
+		set_content("#toggle_favourite", FAV_BUTTON_TEXT[1]);
+	}
+	refactor(); repaint();
 });
 
 on("input", "#properties [name]", e => set_content("#saveprops", "Apply changes"));
