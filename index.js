@@ -649,8 +649,15 @@ canvas.addEventListener("pointerup", e => {
 	repaint();
 });
 
-function make_message_editor(id, initial) {
-	return TEXTAREA({...id, rows: 10, cols: 60}, initial);
+function make_message_editor(id, el) {
+	const vars_avail = { };
+	for (let par = el; par; par = par.parent && par.parent[0]) {
+		if (par.provides) Object.assign(vars_avail, par.provides);
+		let tp = types[par.type].provides;
+		if (tp) Object.assign(vars_avail, tp);
+	}
+	console.log(vars_avail);
+	return TEXTAREA({...id, rows: 10, cols: 60}, el.message || "");
 }
 
 let propedit = null;
@@ -674,7 +681,7 @@ canvas.addEventListener("dblclick", e => {
 			}
 			break;
 			case "undefined":
-				if (param.attr === "message") control = make_message_editor(id, el[param.attr]);
+				if (param.attr === "message") control = make_message_editor(id, el);
 				else control = INPUT({...id, value: el[param.attr] || "", size: 50});
 				break;
 			default: break; //incl fixed strings
