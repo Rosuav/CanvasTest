@@ -9,7 +9,6 @@
 * Builtins need better explanation. Somehow.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
-  - dest="/web", target
   - dest="/set", target, action="add" or ""
     - For each of these, provide a small number of classes that do this with one message
     - Have a fallback like unknown-builtin to cope with any others (it won't be in the toolbox).
@@ -180,6 +179,11 @@ const types = {
 		params: [{attr: "dest", values: "/w"}, {attr: "target", label: "Person to whisper to"}],
 		typedesc: "Whisper to a specific person",
 	},
+	web_message: {
+		color: "#99ffff", children: ["message"], label: el => "🌏 to " + el.target,
+		params: [{attr: "dest", values: "/web"}, {attr: "target", label: "Recipient"}],
+		typedesc: "Leave a private message for someone",
+	},
 	text: {
 		color: "#77eeee", label: el => el.message,
 		params: [{attr: "message", label: "Text"}],
@@ -274,7 +278,6 @@ const tray_tabs = [
 	]},
 	{name: "Advanced", color: "#f7bbf7", items: [
 		{type: "whisper_back", message: "Shh! This is a whisper!"},
-		{type: "delay", delay: "2"},
 		{type: "builtin_uptime"},
 		{type: "builtin_shoutout", builtin_param: "%s"},
 		{type: "builtin_calc", builtin_param: "1 + 2 + 3"},
@@ -284,6 +287,15 @@ const tray_tabs = [
 		{type: "conditional_number", expr1: "$deaths$ > 10"},
 		//NOTE: Even though they're internally conditionals too, cooldowns don't belong in this tray
 	]},
+	{name: "Special", color: "#bbffbb", items: [
+		{type: "delay", delay: "2"},
+		{type: "group", message: [
+			{type: "web_message", target: "{param}", message: [
+				{type: "text", message: "This is a top secret message."},
+			]},
+			{type: "text", message: "A secret message has been sent to you at: https://sikorsky.rosuav.com/channels/{param}/private"},
+		]},
+	]},
 ];
 function make_template(el, par) {
 	if (el === "") return;
@@ -292,10 +304,10 @@ function make_template(el, par) {
 	const idx = actives.indexOf(el);
 	if (idx !== -1) actives.splice(idx, 1);
 	el.template = true;
-	if (par && el.parent) el.parent[0] = par;
+	if (par) el.parent = par;
 	for (let attr of types[el.type].children || []) {
 		if (!el[attr]) el[attr] = [""];
-		else el[attr].forEach(e => make_template(e, el));
+		else ensure_blank(el[attr]).forEach((e, i) => make_template(e, [el, attr, i]));
 	}
 }
 tray_tabs.forEach(t => (trays[t.name] = t.items).forEach(e => make_template(e)));
