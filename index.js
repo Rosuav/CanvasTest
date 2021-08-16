@@ -2,7 +2,10 @@
 
 * Have a small button on the element or something that shows the properties? Can be done with double click,
   but maybe it'd be better to have a more visually obvious indicator?
-* Saving of favourites. ??? WHERE???
+* Saving of favourites.
+  - Ultimately this will be done on the server and associated with your user ID.
+  - For now, it's done in Local Storage.
+  - Note that there is basically no validation, so you might get a bit of a mess if you fiddle.
 * Builtins need better explanation. Somehow.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
@@ -628,7 +631,7 @@ canvas.addEventListener("pointerup", e => {
 			//They all function the same way, though: remove the Active, add to Favourites,
 			//but deduplicate against all other Favourites.
 			make_template(dragging);
-			if (!is_favourite(dragging)) favourites.push(dragging);
+			if (!is_favourite(dragging)) {favourites.push(dragging); save_favourites();}
 			refactor();
 			dragging = null; repaint();
 			return;
@@ -730,6 +733,7 @@ on("click", "#toggle_favourite", e => {
 		favourites.push(t);
 		set_content("#toggle_favourite", FAV_BUTTON_TEXT[1]);
 	}
+	save_favourites();
 	refactor(); repaint();
 });
 
@@ -776,14 +780,14 @@ function matches(param, val) {
 		default: return false;
 	}
 }
-const new_elem = el => {actives.push(el); return el;}; //HACK: Easier to add to array here than to collect them afterwards
-function message_to_element(msg) {
+
+function message_to_element(msg, new_elem) {
 	if (msg === "") return "";
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
 	if (Array.isArray(msg)) switch (msg.length) {
 		case 0: return ""; //Empty array is an empty message
-		case 1: return message_to_element(msg[0]);
-		default: return new_elem({type: "group", message: msg.map(message_to_element)});
+		case 1: return message_to_element(msg[0], new_elem);
+		default: return new_elem({type: "group", message: msg.map(el => message_to_element(el, new_elem))});
 	}
 	//TODO: If there are any flags set that can apply to subelements, add an element that carries them
 	for (let typename in types) {
@@ -795,13 +799,13 @@ function message_to_element(msg) {
 				delete msg[type.attr];
 			}
 			if (type.children) for (let attr of type.children) {
-				el[attr] = ensure_blank(arrayify(msg[attr]).map(message_to_element));
+				el[attr] = ensure_blank(arrayify(msg[attr]).map(el => message_to_element(el, new_elem)));
 				el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
 			}
 			return el;
 		}
 	}
-	if (msg.message) return message_to_element(msg.message);
+	if (msg.message) return message_to_element(msg.message, new_elem);
 	return new_elem({type: "text", value: "Shouldn't happen"});
 }
 
@@ -825,7 +829,7 @@ function load_message(msg) {
 		actives[0][attr] = msg[attr] || "";
 		delete msg[attr];
 	}
-	actives[0].message = ensure_blank(arrayify(msg)).map(message_to_element);
+	actives[0].message = ensure_blank(arrayify(msg)).map(el => message_to_element(el, el => {actives.push(el); return el;}));
 	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
 	refactor(); repaint();
 }
@@ -834,3 +838,20 @@ on("submit", "#jsondlg form", e => {
 	e.match.closest("dialog").close();
 });
 load_message({"builtin":"uptime","builtin_param":"%s","message":{"conditional":"string","expr1":"{uptime}","expr2":"0","message":"Channel is currently offline.","otherwise":"@$$: Channel {channel} has been online for {uptime|time_english} or {uptime|time_hms}."}});
+
+//DBU violation, fix if you feel like it
+function save_favourites() {
+	localStorage.setItem("StilleBotGUI_Favourites", JSON.stringify(favourites.map(element_to_message)));
+}
+
+function load_favourites() {
+	const favs = JSON.parse(localStorage.getItem("StilleBotGUI_Favourites") || "[]");
+	if (!Array.isArray(favs)) return;
+	const newfavs = favs.map(f => message_to_element(f, el => el));
+	//TODO: Should favourites be emptied first or not?
+	for (let f of newfavs) {
+		if (!is_favourite(f)) {make_template(f); favourites.push(f);}
+	}
+	refactor(); repaint();
+}
+load_favourites();
