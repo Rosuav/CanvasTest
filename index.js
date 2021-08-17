@@ -10,8 +10,6 @@
 * Deduplicate a ton of data by getting it from the server instead of hard-coding.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
-  - voice=ID -- paint? What if it's set on just one message - how should that be imported?
-    - Maybe have an element that changes voice for its children, but not in toolbox??
   - aliases?? Edit the anchor??
 * Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
   have an old command in this form, edit and save it in the default or raw UIs, then open this one.
@@ -169,6 +167,11 @@ const types = {
 		params: [{attr: "mode", label: "Randomize", values: "random"}],
 		typedesc: "Choose one child at random and show it",
 	},
+	voice_subtree: { //TODO: Have a flag for voices that apply to the whole command - then this will be only for those that mix and match
+		color: "#bbbb33", children: ["message"], label: el => "Change voice",
+		params: [{attr: "voice", label: "Voice ID", values: required}], //TODO: When there's a set of available voices, validate accordingly
+		typedesc: "Change the selected voice for a set of messages",
+	},
 	whisper_back: {
 		color: "#99ffff", label: el => "🤫 " + el.message,
 		params: [{attr: "dest", values: "/w"}, {attr: "target", values: "$$"}, {attr: "message", label: "Text"}],
@@ -201,7 +204,7 @@ const types = {
 		typedesc: "Send a message in the channel",
 	},
 	group: {
-		color: "#77eeee", children: ["message"], label: el => "Group",
+		color: "#66dddd", children: ["message"], label: el => "Group",
 		typedesc: "Group some elements for convenience. Has no inherent effect.",
 	},
 	flag: {
