@@ -416,6 +416,7 @@ function render(set, y) {
 		y += element_path(el).totheight + 10;
 	});
 }
+//NOTE: The color *must* be a string of the form "#rrggbb" as it will have alpha added
 function boxed_set(set, color, desc, y) {
 	const h = set.map(el => element_path(el).totheight + 10).reduce((x,y) => x + y, 30)
 	ctx.save();
@@ -428,6 +429,12 @@ function boxed_set(set, color, desc, y) {
 	ctx.rect(template_x - 9, y, 218, h);
 	ctx.clip();
 	render(set, y + 30);
+	//Fade wide elements out by overlaying them with the background colour in ever-increasing alpha
+	const fade_right = ctx.createLinearGradient(template_x + 200, 0, template_x + 210, 0);
+	fade_right.addColorStop(0, color + "00");
+	fade_right.addColorStop(1, color);
+	ctx.fillStyle = fade_right;
+	ctx.fillRect(template_x + 200, y, 10, h);
 	ctx.restore();
 	return y + h + 10;
 }
