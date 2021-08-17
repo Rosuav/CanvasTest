@@ -743,7 +743,7 @@ canvas.addEventListener("dblclick", e => {
 	if (!el) return;
 	propedit = el;
 	const type = types[el.type];
-	set_content("#toggle_favourite", FAV_BUTTON_TEXT[is_favourite(el) ? 1 : 0]);
+	set_content("#toggle_favourite", FAV_BUTTON_TEXT[is_favourite(el) ? 1 : 0]).disabled = type.fixed;
 	set_content("#typedesc", type.typedesc || el.desc);
 	set_content("#params", (type.params||[]).map(param => {
 		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr, disabled: el.template};
@@ -773,6 +773,7 @@ canvas.addEventListener("dblclick", e => {
 });
 
 on("click", "#toggle_favourite", e => {
+	if (types[propedit.type].fixed) return;
 	const f = is_favourite(propedit);
 	if (f) {
 		favourites.splice(favourites.indexOf(f), 1);
