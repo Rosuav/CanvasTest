@@ -816,13 +816,16 @@ function matches(param, val) {
 	}
 }
 
-function message_to_element(msg, new_elem) {
+function message_to_element(msg, new_elem, array_ok) {
 	if (msg === "") return "";
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
 	if (Array.isArray(msg)) switch (msg.length) {
 		case 0: return ""; //Empty array is an empty message
-		case 1: return message_to_element(msg[0], new_elem);
-		default: return new_elem({type: "group", message: msg.map(el => message_to_element(el, new_elem))});
+		case 1: return message_to_element(msg[0], new_elem, array_ok);
+		default:
+			msg = msg.map(el => message_to_element(el, new_elem));
+			if (array_ok) return msg;
+			return new_elem({type: "group", message: ensure_blank(msg)});
 	}
 	//TODO: If there are any flags set that can apply to subelements, add an element that carries them
 	for (let typename in types) {
@@ -840,7 +843,7 @@ function message_to_element(msg, new_elem) {
 			return el;
 		}
 	}
-	if (msg.message) return message_to_element(msg.message, new_elem);
+	if (msg.message) return message_to_element(msg.message, new_elem, array_ok);
 	return new_elem({type: "text", value: "Shouldn't happen"});
 }
 
@@ -864,7 +867,7 @@ function load_message(msg) {
 		actives[0][attr] = msg[attr] || "";
 		delete msg[attr];
 	}
-	actives[0].message = ensure_blank(arrayify(msg)).map(el => message_to_element(el, el => {actives.push(el); return el;}));
+	actives[0].message = ensure_blank(arrayify(message_to_element(msg, el => {actives.push(el); return el;}, true)));
 	actives[0].message.forEach((e, i) => typeof e === "object" && (e.parent = [actives[0], "message", i]));
 	refactor(); repaint();
 }
