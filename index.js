@@ -330,7 +330,7 @@ const trashcan = {type: "anchor", color: "#999999", label: "Trash - drop here to
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);}
-const tab_width = 15, tab_height = 80;
+const tab_width = 15, tab_height = 70;
 const tray_x = canvas.width - tab_width - 5; let tray_y; //tray_y is calculated during repaint
 const template_x = tray_x - 210, template_y = 10;
 const paintbox_x = 250, paintbox_height = 40;
