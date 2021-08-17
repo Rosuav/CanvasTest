@@ -424,6 +424,9 @@ function boxed_set(set, color, desc, y) {
 	ctx.strokeRect(template_x - 10, y, 220, h);
 	ctx.font = "12px sans"; ctx.fillStyle = "black";
 	ctx.fillText(desc, template_x + 15, y + 19, 175);
+	ctx.beginPath();
+	ctx.rect(template_x - 9, y, 218, h);
+	ctx.clip();
 	render(set, y + 30);
 	ctx.restore();
 	return y + h + 10;
