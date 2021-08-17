@@ -10,7 +10,6 @@
 * Deduplicate a ton of data by getting it from the server instead of hard-coding.
 * Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
 * Message attributes still to implement:
-  - casefold on all string-based conditionals
   - voice=ID -- paint? What if it's set on just one message - how should that be imported?
     - Maybe have an element that changes voice for its children, but not in toolbox??
   - aliases?? Edit the anchor??
@@ -139,17 +138,20 @@ const types = {
 			el.expr1 && el.expr2 ? el.expr1 + " == " + el.expr2 : "String comparison",
 			"Otherwise:",
 		],
-		params: [{attr: "conditional", values: "string"}, {attr: "expr1", label: "Expression 1"}, {attr: "expr2", label: "Expression 2"}],
+		params: [{attr: "conditional", values: "string"}, {attr: "casefold", label: "Case insensitive", values: true},
+			{attr: "expr1", label: "Expression 1"}, {attr: "expr2", label: "Expression 2"}],
 		typedesc: "Make a decision - if THIS is THAT, do one thing, otherwise do something else.",
 	},
 	conditional_contains: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["String includes", "Otherwise:"],
-		params: [{attr: "conditional", values: "contains"}, {attr: "expr1", label: "Needle"}, {attr: "expr2", label: "Haystack"}],
+		params: [{attr: "conditional", values: "contains"}, {attr: "casefold", label: "Case insensitive", values: true},
+			{attr: "expr1", label: "Needle"}, {attr: "expr2", label: "Haystack"}],
 		typedesc: "Make a decision - if Needle in Haystack, do one thing, otherwise do something else.",
 	},
 	conditional_regexp: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => ["Regular expression", "Otherwise:"],
-		params: [{attr: "conditional", values: "regexp"}, {attr: "expr1", label: "Reg Exp"}, {attr: "expr2", label: "Compare against"}],
+		params: [{attr: "conditional", values: "regexp"}, {attr: "casefold", label: "Case insensitive", values: true},
+			{attr: "expr1", label: "Reg Exp"}, {attr: "expr2", label: "Compare against"}],
 		typedesc: "Make a decision - if regular expression, do one thing, otherwise do something else.",
 	},
 	conditional_number: {
@@ -738,6 +740,7 @@ canvas.addEventListener("dblclick", e => {
 				if (param.attr === "message") control = make_message_editor(id, el);
 				else control = INPUT({...id, value: el[param.attr] || "", size: 50});
 				break;
+			case "boolean": control = INPUT({...id, type: "checkbox", checked: el[param.attr] === "on"}); break;
 			default: break; //incl fixed strings
 		}
 		return control && TR([TD(LABEL({htmlFor: "value-" + param.attr}, param.label + ": ")), TD(control)]);
@@ -773,7 +776,8 @@ on("submit", "#setprops", e => {
 		if (val) {
 			//TODO: Validate based on the type, to prevent junk data from hanging around until save
 			//Ultimately the server will validate, but it's ugly to let it sit around wrong.
-			propedit[param.attr] = val.value;
+			if (typeof param.values === "boolean") propedit[param.attr] = val.checked ? "on" : "";
+			else propedit[param.attr] = val.value;
 		}
 	}
 	propedit = null;
@@ -803,6 +807,7 @@ function matches(param, val) {
 		} else return param.values.includes(val);
 		case "function": return param.values(val);
 		case "undefined": return typeof val === "string" || typeof val === "undefined";
+		case "boolean": return !val || val === "on";
 		case "string": return param.values === val;
 		default: return false;
 	}
