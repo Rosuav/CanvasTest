@@ -275,6 +275,16 @@ const actives = [
 			"{@mod}": "1 if the command was triggered by a mod/broadcaster, 0 if not",
 		},
 	},
+	/*{type: "anchor", x: 10, y: 25, label: "When a new song starts...", message: [""],
+		desc: "A track just started playing (see VLC integration)",
+		provides: {
+			"{desc}": "Human-readable description of what's playing (block and track names)",
+			"{blockpath}": "Full path to the current block",
+			"{block}": "Name of the section/album/block of tracks currently playing, if any",
+			"{track}": "Name of the audio file that's currently playing",
+			"{playing}": "1 if music is playing, or 0 if paused, stopped, disconnected, etc",
+		},
+	},*/
 ];
 const favourites = [];
 const trays = { };
