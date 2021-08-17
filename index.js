@@ -29,6 +29,10 @@ anchor based on SPECIALS and SPECIAL_PARAMS from addcmd.pike. (Optionally filter
 There will always be an anchor whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
+
+FIXME: Making an element fav and then dragging from template moves orig - check parent pointers
+
+FIXME: Dragging a flag needs to do two diff colours
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA, LI, CODE} = choc;
