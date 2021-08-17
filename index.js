@@ -168,7 +168,7 @@ const types = {
 		typedesc: "Change the selected voice for a set of messages",
 	},
 	whisper_back: {
-		color: "#99ffff", label: el => "🤫 " + el.message,
+		color: "#99ffff", width: 400, label: el => "🤫 " + el.message,
 		params: [{attr: "dest", values: "/w"}, {attr: "target", values: "$$"}, {attr: "message", label: "Text"}],
 		typedesc: "Whisper to the person who ran the command",
 	},
@@ -194,7 +194,7 @@ const types = {
 		typedesc: "Update a variable. Can be accessed as $varname$ in this or any other command.",
 	},
 	text: {
-		color: "#77eeee", label: el => el.message,
+		color: "#77eeee", width: 400, label: el => el.message,
 		params: [{attr: "message", label: "Text"}],
 		typedesc: "Send a message in the channel",
 	},
@@ -225,9 +225,9 @@ function element_path(element) {
 	if (path_cache[cache_key]) return path_cache[cache_key];
 	const type = types[element.type];
 	const path = new Path2D;
+	const width = type.width || 200;
 	path.moveTo(0, 0);
 	if (type.style === "flag") {
-		const width = type.width;
 		path.lineTo(width, 0);
 		path.bezierCurveTo(width + 4, 12, width - 4, 5, width, 20); //Curve on the edge of the flag
 		path.lineTo(5, 20);
@@ -236,15 +236,15 @@ function element_path(element) {
 		path.closePath();
 		return path_cache[cache_key] = {path, connections: [], totheight: 30, labelpos: [14]};
 	}
-	path.lineTo(200, 0);
-	path.lineTo(200, 30);
+	path.lineTo(width, 0);
+	path.lineTo(width, 30);
 	let y = 30;
 	const connections = [], labelpos = [20];
 	if (type.children) for (let i = 0; i < type.children.length; ++i) {
 		if (i) {
 			//For second and subsequent children, add a separator bar and room for a label.
-			path.lineTo(200, y);
-			path.lineTo(200, y += 20);
+			path.lineTo(width, y);
+			path.lineTo(width, y += 20);
 			labelpos.push(y - 5);
 		}
 		const childset = element[type.children[i]];
