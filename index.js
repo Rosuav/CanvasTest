@@ -418,12 +418,14 @@ function render(set, y) {
 }
 function boxed_set(set, color, desc, y) {
 	const h = set.map(el => element_path(el).totheight + 10).reduce((x,y) => x + y, 30)
+	ctx.save();
 	ctx.fillStyle = color;
 	ctx.fillRect(template_x - 10, y, 220, h);
 	ctx.strokeRect(template_x - 10, y, 220, h);
 	ctx.font = "12px sans"; ctx.fillStyle = "black";
 	ctx.fillText(desc, template_x + 15, y + 19, 175);
 	render(set, y + 30);
+	ctx.restore();
 	return y + h + 10;
 }
 
