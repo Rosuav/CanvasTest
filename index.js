@@ -106,7 +106,7 @@ const types = {
 	builtin_giveaway: {
 		color: "#ee77ee", children: ["message"], label: el => "Giveaway tools",
 		params: [
-			{attr: "builtin", values: "giveaway"},
+			{attr: "builtin", values: "chan_giveaway"},
 			{attr: "builtin_param", label: "Action", values: ["refund", "status"]},
 		],
 		typedesc: "Handle giveaways via channel point redemptions",
