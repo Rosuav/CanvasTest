@@ -58,11 +58,6 @@ const types = {
 	//which define a range of numeric values.
 	//If the value is editable (ie not a fixed string), also provide a label for editing.
 	//These will be detected in the order they are iterated over.
-	//TODO: Which things should be elements and which should be paint??
-	//Paint's job is to reduce the size of the visible tree. If we don't have any paint, this tree will
-	//be *larger* than the one in the vanilla editor, since each element can apply at most one attribute
-	//(although it might still be clearer, in complicated cases where evaluation order matters). But
-	//what makes some things work better as paint and others as elements?
 	delay: {
 		color: "#77ee77", children: ["message"], label: el => `Delay ${el.delay} seconds`,
 		params: [{attr: "delay", label: "Delay (seconds)", values: [1, 7200, 1]}],
