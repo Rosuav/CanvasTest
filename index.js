@@ -2,6 +2,7 @@
 
 Integration with StilleBot.
 * Saving of favourites - send to the server, they'll be validated, and associated with your user ID.
+  - Should be part of the websocket sync so they appear instantly on all clients
 * Deduplicate a ton of data by getting it from the server instead of hard-coding.
   - Builtins and their vars_provided
   - Specials and their SPECIALS and SPECIAL_PARAMS (maybe filter out deprecateds?)
@@ -10,6 +11,8 @@ Integration with StilleBot.
   - Specials have provides that depend on exactly which special it is.
   - Triggers have integrated conditions. Not sure how to do that one.
 * Save and load, obviously. Pretty straight-forward and the infrastructure is already there.
+* List of available voices and their names
+  - Need to support select boxes with different descriptions
 
 Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
 have an old command in this form, edit and save it in the default or raw UIs, then open this one. Other
@@ -57,7 +60,7 @@ const types = {
 	builtin_uptime: {
 		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
 		params: [{attr: "builtin", values: "uptime"}],
-		typedesc: "Check the channel's uptime - {uptime} - and fetch the channel name {channel}",
+		typedesc: "See if the channel is online, and if so, for how long",
 		provides: {
 			"{uptime}": "Number of seconds the channel has been online, or 0 if offline",
 			"{channel}": "Channel name (may later become the display name)",
@@ -128,7 +131,7 @@ const types = {
 	},
 	builtin_pointsrewards: {
 		color: "#ee77ee", children: ["message"], label: el => "Points Rewards",
-		params: [{attr: "builtin", values: "chan_pointsrewards"}, {attr: "builtin_param", label: "Action"}], //Not currently editable. Needs reward ID and a set of commands. Might not be worth doing properly.
+		params: [{attr: "builtin", values: "chan_pointsrewards"}, {attr: "builtin_param", label: "Action"}], //Not usefully editable. Needs reward ID and a set of commands. Might not be worth doing properly.
 		typedesc: "Manipulate channel point rewards",
 		provides: {
 			"{error}": "Error message, if any",
@@ -147,7 +150,7 @@ const types = {
 	builtin_other: {
 		color: "#ee77ee", children: ["message"], label: el => "Unknown Builtin: " + el.builtin,
 		params: [{attr: "builtin", label: "Builtin name", values: required}, {attr: "builtin_param", label: "Parameter"}],
-		typedesc: "Unknown builtin - either a malformed command or one that this editor cannot display.",
+		typedesc: "Unknown builtin - either a malformed command or one that this editor does not recognize.",
 	},
 	conditional_string: {
 		color: "#7777ee", children: ["message", "otherwise"], label: el => [
@@ -185,7 +188,7 @@ const types = {
 		params: [{attr: "mode", label: "Randomize", values: "random"}],
 		typedesc: "Choose one child at random and show it",
 	},
-	voice_subtree: { //TODO: Have a flag for voices that apply to the whole command - then this will be only for those that mix and match
+	voice_subtree: {
 		color: "#bbbb33", children: ["message"], label: el => "Change voice",
 		params: [{attr: "voice", label: "Voice ID", values: required}], //TODO: When there's a set of available voices, validate accordingly
 		typedesc: "Change the selected voice for a set of messages",
@@ -235,7 +238,7 @@ const types = {
 	},
 };
 
-const path_cache = { }; //TODO: Clean this out periodically
+const path_cache = { };
 function element_path(element) {
 	if (element === "") return {totheight: 30}; //Simplify height calculation
 	//Calculate a cache key for the element. This should be affected by anything that affects
@@ -663,7 +666,6 @@ function has_parent(child, parent) {
 }
 
 function snap_to_elements(xpos, ypos) {
-	//TODO: Optimize this?? We should be able to check against only those which are close by.
 	for (let el of [...actives, ...specials]) { //TODO: Don't make pointless arrays
 		if (el.template || has_parent(el, dragging)) continue;
 		const path = element_path(el);
@@ -922,7 +924,6 @@ function message_to_element(msg, new_elem, array_ok) {
 			if (array_ok) return msg;
 			return new_elem({type: "group", message: ensure_blank(msg)});
 	}
-	//TODO: If there are any flags set that can apply to subelements, add an element that carries them
 	for (let typename in types) {
 		const type = types[typename];
 		if (type.params && type.params.every(p => matches(p, msg[p.attr]))) {
