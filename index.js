@@ -29,6 +29,12 @@ anchor based on SPECIALS and SPECIAL_PARAMS from addcmd.pike. (Optionally filter
 There will always be an anchor whose text (and possibly colour) will be determined by what we are
 editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
 will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
+
+TODO: Double-clicking on a template needs to make it clear that you can't edit that, but that you should
+drag it. Or maybe it needs a button "add to command" that adds at the end of the anchor? Then you can
+reorder and reparent from there.
+
+TODO: Longer text when width allows it.
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA, LI, CODE} = choc;
