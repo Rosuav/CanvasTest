@@ -1,34 +1,25 @@
 /* TODO
 
-* Have a small button on the element or something that shows the properties? Can be done with double click,
-  but maybe it'd be better to have a more visually obvious indicator?
-* Saving of favourites.
-  - Ultimately this will be done on the server and associated with your user ID.
-  - For now, it's done in Local Storage.
-  - Note that there is basically no validation, so you might get a bit of a mess if you fiddle.
-* Builtins need better explanation. Somehow.
+Integration with StilleBot.
+* Saving of favourites - send to the server, they'll be validated, and associated with your user ID.
 * Deduplicate a ton of data by getting it from the server instead of hard-coding.
-* Favs with children push or cross the edge of the box - functional but ugly. Collapse them?? Fade out?
-* Message attributes still to implement:
-  - aliases?? Edit the anchor??
-* Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
-  have an old command in this form, edit and save it in the default or raw UIs, then open this one.
+  - Builtins and their vars_provided
+  - Specials and their SPECIALS and SPECIAL_PARAMS (maybe filter out deprecateds?)
+* Different forms of anchor
+  - Commands have alias options and allow flags.
+  - Specials have provides that depend on exactly which special it is.
+  - Triggers have integrated conditions. Not sure how to do that one.
+* Save and load, obviously. Pretty straight-forward and the infrastructure is already there.
+
+Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
+have an old command in this form, edit and save it in the default or raw UIs, then open this one. Other
+than that, though, this should be able to faithfully load and save any command, even if you couldn't
+actually make it directly in this editor. (It may be worth having a tray for the really complicated
+things that most people will never want to look at.)
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
-  - The anchor point may belong in Actives or may belong in Specials. Uncertain.
-
-Eventually this will go into StilleBot as an alternative command editor. Saving will be via the exact same
-JSON format that the current editor uses, making them completely compatible. Note that information that
-cannot be represented in JSON (eg exact pixel positions, and unanchored elements) will be lost on save/load.
-
-TODO: When integrated, fetch vars_provided from each builtin and use that to define the provides blocks for
-each class that sets a builtin. Also, if the anchor is a special trigger, provides should be set on that
-anchor based on SPECIALS and SPECIAL_PARAMS from addcmd.pike. (Optionally filter out deprecateds?)
-
-There will always be an anchor whose text (and possibly colour) will be determined by what we are
-editing (command, trigger, special, etc). Some anchors will offer information the way builtins do, others
-will be configurable (eg triggers). Other anchors have special purposes (eg Trash) and are not saved.
+  - The primary anchor point may belong in Actives or may belong in Specials. Uncertain.
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA, LI, CODE} = choc;
