@@ -10,9 +10,12 @@ Integration with StilleBot.
   - Commands have alias options and allow flags.
   - Specials have provides that depend on exactly which special it is.
   - Triggers have integrated conditions. Not sure how to do that one.
+  - TODO: Editable anchors. Maybe separate them all out - "anchor_command", "anchor_trigger",
+    "anchor_special", and "trashcan"? We can mutate anchor_special based on the specific special
+    being edited - there'll only ever be one at a time.
 * Save and load, obviously. Pretty straight-forward and the infrastructure is already there.
 * List of available voices and their names
-  - Need to support select boxes with different descriptions
+  - TODO: Support select boxes with different descriptions
 
 Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
 have an old command in this form, edit and save it in the default or raw UIs, then open this one. Other
