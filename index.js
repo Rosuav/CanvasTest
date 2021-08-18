@@ -25,7 +25,7 @@ import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/
 const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA, LI, CODE} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
-const SNAP_RANGE = 100; //Distance-squared to permit snapping (25 = 5px radius)
+const SNAP_RANGE = 100; //Distance-squared to permit snapping (eg 25 = 5px radius)
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
 const FAV_BUTTON_TEXT = ["Fav ☆", "Fav ★"];
