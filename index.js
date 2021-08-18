@@ -414,11 +414,9 @@ function make_flag_flags() {
 }
 make_flag_flags(); refactor();
 
-//NOTE: Assumes that this is always called with the same font settings
-//(Should it maintain multiple caches, keyed by ctx.font?)
 const textlimit_cache = { };
 function limit_width(ctx, txt, width) {
-	const key = width + ":" + txt;
+	const key = ctx.font + ":" + width + ":" + txt;
 	if (textlimit_cache[key]) return textlimit_cache[key];
 	//Since we can't actually ask the text renderer for character positions, we have to do it ourselves.
 	//First try: See if the entire text fits.
