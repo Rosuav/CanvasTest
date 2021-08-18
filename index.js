@@ -34,7 +34,7 @@ TODO: Double-clicking on a template needs to make it clear that you can't edit t
 drag it. Or maybe it needs a button "add to command" that adds at the end of the anchor? Then you can
 reorder and reparent from there.
 
-TODO: Longer text when width allows it.
+TODO: Wrap the provides buttons
 */
 import choc, {set_content, DOM, on, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 const {BUTTON, DIV, LABEL, INPUT, SELECT, OPTION, TR, TD, TEXTAREA, LI, CODE} = choc;
