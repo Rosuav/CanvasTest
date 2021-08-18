@@ -15,7 +15,6 @@ Integration with StilleBot.
     being edited - there'll only ever be one at a time.
 * Save and load, obviously. Pretty straight-forward and the infrastructure is already there.
 * List of available voices and their names
-  - TODO: Support select boxes with different descriptions
 
 Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
 have an old command in this form, edit and save it in the default or raw UIs, then open this one. Other
@@ -35,6 +34,7 @@ const SNAP_RANGE = 100; //Distance-squared to permit snapping (eg 25 = 5px radiu
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext('2d');
 const FAV_BUTTON_TEXT = ["Fav ☆", "Fav ★"];
+const voices_available = {"": "Default", "279141671": "Mustard Mine"}; //Will be provided by the server
 
 const arrayify = x => Array.isArray(x) ? x : [x];
 const ensure_blank = arr => {
@@ -191,10 +191,10 @@ const types = {
 		params: [{attr: "mode", label: "Randomize", values: "random"}],
 		typedesc: "Choose one child at random and show it",
 	},
-	voice_subtree: {
+	voice: {
 		color: "#bbbb33", children: ["message"], label: el => "Change voice",
-		params: [{attr: "voice", label: "Voice ID", values: required}], //TODO: When there's a set of available voices, validate accordingly
-		typedesc: "Change the selected voice for a set of messages",
+		params: [{attr: "voice", label: "Voice", values: Object.keys(voices_available), selections: voices_available}],
+		typedesc: "Select a different voice for messages - only available if alternate voices are authorized",
 	},
 	whisper_back: {
 		color: "#99ffff", width: 400, label: el => "🤫 " + el.message,
@@ -819,7 +819,7 @@ canvas.addEventListener("dblclick", e => {
 				const [min, max, step] = param.values;
 				control = INPUT({...id, type: "number", min, max, step, value: el[param.attr]});
 			} else {
-				control = SELECT(id, param.values.map(v => OPTION({selected: v === el[param.attr]}, v))); //TODO: Allow value and description to differ
+				control = SELECT(id, param.values.map(v => OPTION({selected: v === el[param.attr], value: v}, (param.selections||{})[v] || v)));
 			}
 			break;
 			case "undefined": case "function":
