@@ -414,6 +414,45 @@ function make_flag_flags() {
 }
 make_flag_flags(); refactor();
 
+//NOTE: Assumes that this is always called with the same font settings
+//(Should it maintain multiple caches, keyed by ctx.font?)
+const textlimit_cache = { };
+function limit_width(ctx, txt, width) {
+	const key = width + ":" + txt;
+	if (textlimit_cache[key]) return textlimit_cache[key];
+	//Since we can't actually ask the text renderer for character positions, we have to do it ourselves.
+	//First try: See if the entire text fits.
+	let metrics = ctx.measureText(txt);
+	if (width === "") return textlimit_cache[key] = metrics.width; //Actually we're just doing a cached measurement.
+	if (metrics.width <= width) return textlimit_cache[key] = txt; //Perfect, all fits.
+	//We have to truncate. Second try: The other extreme - a single ellipsis.
+	if (limit_width(ctx, "…", "") > width) return ""; //Wow that is super narrow... there's no hope for you.
+	//Okay. So we can fit an ellipsis, but not the whole text. Search for the truncation
+	//that fits, but such that even a single additional character wouldn't.
+	//Our first guess is the proportion of the string that would fit, if every character
+	//had the same width.
+	let guess = Math.floor((width / metrics.width) * txt.length);
+	let fits = 0, spills = 0; //These will never legitly be zero, since a length of 1 should fit
+	//Having made a guess based on an assumption which, while technically invalid, is actually
+	//fairly plausible for most text, we then jump four characters at a time to try to find a
+	//span that contains the limit. From that point, we binary search (which should take exactly
+	//two more steps) to get our final result. Under normal circumstances, the first two guesses
+	//will already span the goal, so the total number of probes will be four, plus the full text
+	//above; if the text is a bit more skewed, it might be five. This is better than a naive
+	//binary search for any text longer than 32 characters, and anything shorter than that will
+	//fit anyway. The flip side is that pathological examples like "w"*30 + "i"*1000 will take
+	//ridiculously large numbers of probes to try to resolve. I don't think that's solvable.
+	while (!fits || !spills || (spills - fits) > 1) {
+		const w = limit_width(ctx, txt.slice(0, guess) + "…", "");
+		if (w <= width) fits = guess; else spills = guess;
+		if (!fits) guess -= guess > 4 ? 4 : 1;
+		else if (!spills) guess += guess < txt.length - 4 ? 4 : 1;
+		else guess = Math.floor((fits + spills) / 2);
+		if (guess === fits || guess === spills) break; //Shouldn't happen, but just in case...
+	}
+	return textlimit_cache[key] = txt.slice(0, fits) + "…";
+}
+
 let max_descent = 0;
 function draw_at(ctx, el, parent, reposition) {
 	if (el === "") return;
@@ -432,7 +471,8 @@ function draw_at(ctx, el, parent, reposition) {
 	if (type.style === "flag") label_x = 6; //Hack!
 	else if (el.template) labels[0] = "⯇ " + labels[0];
 	else if (!type.fixed) labels[0] = "⣿ " + labels[0];
-	for (let i = 0; i < labels.length; ++i) ctx.fillText(labels[i].slice(0, 28), label_x, path.labelpos[i], 175);
+	const w = (type.width || 200) - label_x;
+	for (let i = 0; i < labels.length; ++i) ctx.fillText(limit_width(ctx, labels[i], w), label_x, path.labelpos[i]);
 	ctx.stroke(path.path);
 	let flag_x = 220;
 	for (let attr in flags) {
