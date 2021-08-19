@@ -944,7 +944,7 @@ function message_to_element(msg, new_elem, array_ok) {
 	}
 	for (let typename in types) {
 		const type = types[typename];
-		if (type.params && type.params.every(p => matches(p, msg[p.attr]))) {
+		if (!type.fixed && type.params && type.params.every(p => matches(p, msg[p.attr]))) {
 			const el = new_elem({type: typename});
 			for (let param of type.params) {
 				el[param.attr] = msg[param.attr];
