@@ -242,16 +242,16 @@ const types = {
 		params: [{attr: "dest", values: "/web"}, {attr: "target", label: "Recipient"}],
 		typedesc: "Leave a private message for someone",
 	},
-	set_variable: {
-		color: "#dd7777", label: el => `Set $${el.target}$ to ${el.message}`,
-		params: [{attr: "dest", values: "/set"}, {attr: "target", label: "Variable name"}, {attr: "message", label: "New value"}],
-		typedesc: "Change a variable. Can be accessed as $varname$ in this or any other command.",
-	},
 	incr_variable: {
 		color: "#dd7777", label: el => `Add ${el.message} to $${el.target}$`,
 		params: [{attr: "dest", values: "/set"}, {attr: "action", values: "add"},
 			{attr: "target", label: "Variable name"}, {attr: "message", label: "Increment by"}],
 		typedesc: "Update a variable. Can be accessed as $varname$ in this or any other command.",
+	},
+	set_variable: {
+		color: "#dd7777", label: el => `Set $${el.target}$ to ${el.message}`,
+		params: [{attr: "dest", values: "/set"}, {attr: "target", label: "Variable name"}, {attr: "message", label: "New value"}],
+		typedesc: "Change a variable. Can be accessed as $varname$ in this or any other command.",
 	},
 	text: {
 		color: "#77eeee", width: 400, label: el => el.message,
