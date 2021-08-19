@@ -1006,7 +1006,7 @@ function load_favourites() {
 	const favs = JSON.parse(localStorage.getItem("StilleBotGUI_Favourites") || "[]");
 	if (!Array.isArray(favs)) return;
 	const newfavs = favs.map(f => message_to_element(f, el => el));
-	//TODO: Should favourites be emptied first or not?
+	favourites.splice(0); //Replace all favs with the loaded ones.
 	for (let f of newfavs) {
 		if (!is_favourite(f)) {make_template(f); favourites.push(f);}
 	}
