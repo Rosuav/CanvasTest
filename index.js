@@ -48,6 +48,13 @@ const types = {
 	anchor: {
 		color: "#ffff00", fixed: true, children: ["message"],
 		label: el => el.label,
+		//If trigger, have some attributes
+		//If you change the trigger condition type, insta save/load.
+	},
+	trashcan: {
+		color: "#999999", fixed: true, children: ["message"],
+		label: el => "Trash - drop here to discard",
+		typedesc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever.",
 	},
 	//Types can apply zero or more attributes to a message, each one with a set of valid values.
 	//Validity can be defined by an array of strings (take your pick), a single string (fixed value,
@@ -362,8 +369,7 @@ function make_template(el, par) {
 }
 tray_tabs.forEach(t => (trays[t.name] = t.items).forEach(e => make_template(e)));
 let current_tray = "Default";
-const trashcan = {type: "anchor", color: "#999999", label: "Trash - drop here to discard", message: [""],
-	desc: "Anything dropped here can be retrieved until you next reload, otherwise it's gone forever."};
+const trashcan = {type: "trashcan", message: [""]};
 const specials = [trashcan];
 let facts = []; //FAvourites, Current Tray, and Specials. All the elements in the templates column.
 function refactor() {facts = [].concat(favourites, trays[current_tray], specials);}
@@ -720,7 +726,7 @@ canvas.addEventListener("pointerup", e => {
 		//Special: Dragging a flag applies it to the anchor, or discards it. Nothing else.
 		//TODO: Show this on pointer-move too
 		let x = e.offsetX - dragbasex, y = e.offsetY - dragbasey;
-		const anchor = actives[0]; //assert anchor.type === "anchor"
+		const anchor = actives[0]; //assert anchor.type =~ "anchor*"
 		if (x >= anchor.x - 10 && x <= anchor.x + 220 && y >= anchor.y - 30 &&
 				y <= anchor.y + element_path(anchor).totheight + 10) {
 			anchor[dragging.attr] = dragging.value;
@@ -949,7 +955,7 @@ function message_to_element(msg, new_elem, array_ok) {
 on("click", "#open_json", e => {
 	//Starting at the anchor, recursively calculate an echoable message which will create
 	//the desired effect.
-	const anchor = actives[0]; //assert anchor.type === "anchor"
+	const anchor = actives[0]; //assert anchor.type =~ "anchor*"
 	const msg = element_to_message(anchor);
 	for (let attr in flags) {
 		const flag = flags[attr][anchor[attr]];
