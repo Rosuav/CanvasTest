@@ -961,7 +961,7 @@ function message_to_element(msg, new_elem, array_ok) {
 	return new_elem({type: "text", value: "Shouldn't happen"});
 }
 
-on("click", "#open_json", e => {
+on("click", "#open_json", async e => {
 	//Starting at the anchor, recursively calculate an echoable message which will create
 	//the desired effect.
 	const anchor = actives[0]; //assert anchor.type =~ "anchor*"
@@ -970,7 +970,13 @@ on("click", "#open_json", e => {
 		const flag = flags[attr][anchor[attr]];
 		if (flag && anchor[attr] !== "") msg[attr] = anchor[attr];
 	}
-	DOM("#jsontext").value = JSON.stringify(msg);
+	//When integrated, this will be done on the websocket, and will use the current channel
+	//instead of this hacky hack.
+	const canonical = await (await fetch("https://sikorsky.rosuav.com/channels/rosuav/commands", {
+		method: "POST",
+		body: JSON.stringify({msg, cmdname: anchor.type === "anchor_trigger" ? "!!trigger" : "!demo"}),
+	})).json();
+	DOM("#jsontext").value = JSON.stringify(canonical);
 	DOM("#jsondlg").showModal();
 });
 
