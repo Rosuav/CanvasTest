@@ -6,13 +6,6 @@ Integration with StilleBot.
 * Deduplicate a ton of data by getting it from the server instead of hard-coding.
   - Builtins and their vars_provided
   - Specials and their SPECIALS and SPECIAL_PARAMS (maybe filter out deprecateds?)
-* Different forms of anchor
-  - Commands have alias options and allow flags.
-  - Specials have provides that depend on exactly which special it is.
-  - Triggers have integrated conditions. Not sure how to do that one.
-  - TODO: Editable anchors. Maybe separate them all out - "anchor_command", "anchor_trigger",
-    "anchor_special", and "trashcan"? We can mutate anchor_special based on the specific special
-    being edited - there'll only ever be one at a time.
 * Save and load, obviously. Pretty straight-forward and the infrastructure is already there.
 * List of available voices and their names
 
@@ -45,11 +38,42 @@ const ensure_blank = arr => {
 function required(val) {return !!val;} //Filter that demands that an attribute be present
 
 const types = {
-	anchor: {
+	anchor_command: {
 		color: "#ffff00", fixed: true, children: ["message"],
-		label: el => el.label,
-		//If trigger, have some attributes
-		//If you change the trigger condition type, insta save/load.
+		label: el => `When ${el.command} is typed...`, //TODO: Also mention aliases
+		typedesc: "This is how everything starts. Drag flags onto this to apply them.",
+		params: [{attr: "aliases", label: "Aliases"}], //TODO: Validate format? Explain? Or maybe have "Add alias" and "Remove alias" buttons?
+		provides: {
+			"{param}": "Anything typed after the command name",
+			"{username}": "Name of the user who entered the command",
+			"{@mod}": "1 if the command was triggered by a mod/broadcaster, 0 if not",
+		},
+	},
+	anchor_trigger: {
+		color: "#ffff00", fixed: true, children: ["message"],
+		label: el => el.conditional === "contains" ? `When '${el.expr1}' is typed...` : `When a msg matches ${el.expr1} ...`,
+		params: [{attr: "conditional", label: "Match type", values: ["contains", "regexp"],
+				selections: {string: "Simple match", regexp: "Regular expression"}},
+			{attr: "casefold", label: "Case insensitive", values: true},
+			{attr: "expr1", label: "Search for"}, {attr: "expr2", values: "%s"}],
+		provides: {
+			"{param}": "Anything typed after the command name",
+			"{username}": "Name of the user who entered the command",
+			"{@mod}": "1 if the command was triggered by a mod/broadcaster, 0 if not",
+		},
+	},
+	anchor_special: {
+		//Specials are... special. The details here will vary based on which special we're editing (this is !!musictrack).
+		color: "#ffff00", fixed: true, children: ["message"],
+		label: el => "When a song starts...",
+		typedesc: "A track just started playing (see VLC integration)",
+		provides: {
+			"{desc}": "Human-readable description of what's playing (block and track names)",
+			"{blockpath}": "Full path to the current block",
+			"{block}": "Name of the section/album/block of tracks currently playing, if any",
+			"{track}": "Name of the audio file that's currently playing",
+			"{playing}": "1 if music is playing, or 0 if paused, stopped, disconnected, etc",
+		},
 	},
 	trashcan: {
 		color: "#999999", fixed: true, children: ["message"],
@@ -303,24 +327,9 @@ function element_path(element) {
 	return path_cache[cache_key] = {path, connections, totheight: y, labelpos};
 }
 const actives = [
-	{type: "anchor", x: 10, y: 25, label: "When !demo is typed...", message: [""],
-		desc: "This is how everything starts. Drag flags onto this to apply them.",
-		provides: {
-			"{param}": "Anything typed after the command name",
-			"{username}": "Name of the user who entered the command",
-			"{@mod}": "1 if the command was triggered by a mod/broadcaster, 0 if not",
-		},
-	},
-	/*{type: "anchor", x: 10, y: 25, label: "When a new song starts...", message: [""],
-		desc: "A track just started playing (see VLC integration)",
-		provides: {
-			"{desc}": "Human-readable description of what's playing (block and track names)",
-			"{blockpath}": "Full path to the current block",
-			"{block}": "Name of the section/album/block of tracks currently playing, if any",
-			"{track}": "Name of the audio file that's currently playing",
-			"{playing}": "1 if music is playing, or 0 if paused, stopped, disconnected, etc",
-		},
-	},*/
+	{type: "anchor_command", x: 10, y: 25, command: "!demo", aliases: "", message: [""]},
+	//{type: "anchor_special", x: 10, y: 25, message: [""]},
+	//{type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"},
 ];
 const favourites = [];
 const trays = { };
@@ -794,7 +803,7 @@ function make_message_editor(id, el) {
 	//will behave the way the back end would handle them.
 	const vars_avail = [];
 	for (let par = el; par; par = par.parent && par.parent[0]) {
-		vars_avail.unshift(par.provides || types[par.type].provides);
+		vars_avail.unshift(types[par.type].provides);
 	}
 	const allvars = Object.assign({}, ...vars_avail);
 	return DIV({className: "msgedit"}, [
@@ -837,7 +846,7 @@ canvas.addEventListener("dblclick", e => {
 		}
 		return control && TR([TD(LABEL({htmlFor: "value-" + param.attr}, param.label + ": ")), TD(control)]);
 	}));
-	set_content("#providesdesc", Object.entries(el.provides || type.provides || {}).map(([v, d]) => LI([
+	set_content("#providesdesc", Object.entries(type.provides || {}).map(([v, d]) => LI([
 		CODE(v), ": " + d,
 	])));
 	set_content("#saveprops", "Close");
