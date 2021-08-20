@@ -1068,7 +1068,7 @@ async function probe(orig, cmdname) {
 		method: "POST",
 		body: JSON.stringify({msg, cmdname: anchor.type === "anchor_trigger" ? "!!trigger" : "!demo"}),
 	})).json();
-	if (compare_recursive(orig, canonical, true)) console.log("Match!");
+	if (compare_recursive(orig, canonical)) console.log("Match!");
 }
 
 probe({
