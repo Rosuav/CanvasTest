@@ -1013,3 +1013,46 @@ function load_favourites() {
 	refactor(); repaint();
 }
 load_favourites();
+
+async function probe(orig, cmdname) {
+	let msg = orig;
+	//1) Load the message into an element tree
+	const anchor = {type: "anchor_command", x: 10, y: 25, command: "!demo", aliases: "", message: [""]};
+	//const anchor = {type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"};
+	if (typeof msg === "string" || Array.isArray(msg)) msg = {message: msg};
+	for (let attr in flags) {
+		anchor[attr] = msg[attr] || "";
+		delete msg[attr];
+	}
+	anchor.message = ensure_blank(arrayify(message_to_element(msg, el => el, true)));
+	anchor.message.forEach((e, i) => typeof e === "object" && (e.parent = [anchor, "message", i]));
+
+	//2) Save the element tree back to an element
+	const newmsg = element_to_message(anchor);
+	for (let attr in flags) {
+		const flag = flags[attr][anchor[attr]];
+		if (flag && anchor[attr] !== "") msg[attr] = anchor[attr];
+	}
+
+	//3) Canonicalize and compare
+	const canonical = await (await fetch("https://sikorsky.rosuav.com/channels/rosuav/commands", {
+		method: "POST",
+		body: JSON.stringify({msg, cmdname: anchor.type === "anchor_trigger" ? "!!trigger" : "!demo"}),
+	})).json();
+	if (JSON.stringify(canonical) !== JSON.stringify(orig)) {
+		console.log("WAS:", orig);
+		console.log("NOW:", canonical);
+	}
+}
+
+probe({
+    "access": "mod",
+    "builtin": "transcoding",
+    "builtin_param": "%s",
+    "message": {
+      "conditional": "string",
+      "expr1": "qualities",
+      "message": "@$$: View this stream in glorious {resolution}!",
+      "otherwise": "@$$: View this stream in glorious {resolution}! Or any of its other resolutions: {qualities}"
+    }
+  });
