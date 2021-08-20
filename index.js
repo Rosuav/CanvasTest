@@ -1052,8 +1052,9 @@ function compare_recursive(obj1, obj2, path="") {
 async function probe(orig, cmdname) {
 	let msg = orig;
 	//1) Load the message into an element tree
-	const anchor = {type: "anchor_command", x: 10, y: 25, command: "!demo", aliases: "", message: [""]};
-	//const anchor = {type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"};
+	const anchor = cmdname === "!!trigger"
+		? {type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"}
+		: {type: "anchor_command", x: 10, y: 25, command: cmdname, aliases: "", message: [""]};
 	if (typeof msg === "string" || Array.isArray(msg)) msg = {message: msg};
 	apply_params(anchor, msg);
 	for (let attr in flags) {
