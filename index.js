@@ -1069,6 +1069,7 @@ async function probe(orig, cmdname) {
 		body: JSON.stringify({msg, cmdname}),
 	})).json();
 	if (compare_recursive(orig, canonical)) console.log("Match!");
+	else {console.log("WAS:", orig); console.log("NOW:", canonical);}
 }
 
 function sleep(delay) {return new Promise(r => setTimeout(r, delay));}
@@ -1091,8 +1092,4 @@ async function probe_all(...cmds) {
 		await sleep(125);
 	}
 }
-probe_all("spam#rosuav", "stopspam#rosuav");
-//ghost#artsychickadee
-//hearts#rosuav
-//hypestatus#setn07 (has alias_of), ditto trainstatus#beauation and trainstatus#devicat
-//prayer#citizenprayer
+probe_all("ghost#artsychickadee", "hearts#rosuav", "hypestatus#setn07", "trainstatus#beauation", "trainstatus#devicat", "prayer#citizenprayer");
