@@ -1051,7 +1051,7 @@ function compare_recursive(obj1, obj2, path="") {
 
 let failures = 0;
 async function probe(orig, cmdname) {
-	let msg = {...orig};
+	let msg = JSON.parse(JSON.stringify(orig));
 	//1) Load the message into an element tree
 	const anchor = cmdname === "!!trigger"
 		? {type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"}
