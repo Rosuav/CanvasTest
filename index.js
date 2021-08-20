@@ -57,6 +57,7 @@ const types = {
 		params: [{attr: "conditional", label: "Match type", values: ["contains", "regexp"],
 				selections: {string: "Simple match", regexp: "Regular expression"}},
 			{attr: "casefold", label: "Case insensitive", values: true},
+			{attr: "id", label: null}, //Retain the ID but don't show it for editing
 			{attr: "expr1", label: "Search for"}, {attr: "expr2", values: "%s"}],
 		provides: {
 			"{param}": "Anything typed after the command name",
@@ -829,6 +830,7 @@ canvas.addEventListener("dblclick", e => {
 	set_content("#toggle_favourite", FAV_BUTTON_TEXT[is_favourite(el) ? 1 : 0]).disabled = type.fixed;
 	set_content("#typedesc", type.typedesc || el.desc);
 	set_content("#params", (type.params||[]).map(param => {
+		if (param.label === null) return null; //Note that a label of undefined is probably a bug and should be visible.
 		let control, id = {name: "value-" + param.attr, id: "value-" + param.attr, disabled: el.template};
 		switch (typeof param.values) {
 			//"object" has to mean array, we don't support any other type
