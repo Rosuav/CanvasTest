@@ -932,7 +932,7 @@ function matches(param, val) {
 }
 
 function message_to_element(msg, new_elem, array_ok) {
-	if (msg === "") return "";
+	if (msg === "" || typeof msg === "undefined") return "";
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
 	if (Array.isArray(msg)) switch (msg.length) {
 		case 0: return ""; //Empty array is an empty message
