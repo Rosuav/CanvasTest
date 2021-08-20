@@ -14,6 +14,8 @@ have an old command in this form, edit and save it in the default or raw UIs, th
 than that, though, this should be able to faithfully load and save any command, even if you couldn't
 actually make it directly in this editor. (It may be worth having a tray for the really complicated
 things that most people will never want to look at.)
+-- This particular one, with dest/target, might actually be worth handling. Check if counter creation
+-- on the back end still uses the legacy form.
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
@@ -1064,19 +1066,31 @@ async function probe(orig, cmdname) {
 	//3) Canonicalize and compare
 	const canonical = await (await fetch("https://sikorsky.rosuav.com/channels/rosuav/commands", {
 		method: "POST",
-		body: JSON.stringify({msg, cmdname: anchor.type === "anchor_trigger" ? "!!trigger" : "!demo"}),
+		body: JSON.stringify({msg, cmdname}),
 	})).json();
 	if (compare_recursive(orig, canonical)) console.log("Match!");
 }
 
-probe({
-    "access": "mod",
-    "builtin": "transcoding",
-    "builtin_param": "%s",
-    "message": {
-      "conditional": "string",
-      "expr1": "qualities",
-      "message": "@$$: View this stream in glorious {resolution}!",
-      "otherwise": "@$$: View this stream in glorious {resolution}! Or any of its other resolutions: {qualities}"
-    }
-  });
+function sleep(delay) {return new Promise(r => setTimeout(r, delay));}
+
+async function probe_all() {
+	//This won't work without a reference to the full StilleBot commands file, which - for obvious
+	//reasons - isn't included in this repository.
+	const allcmds = await (await fetch("twitchbot_commands.json")).json();
+	if (typeof allcmds !== "object") return;
+	for (let cmd of Object.keys(allcmds).sort()) {
+		console.log(cmd);
+		if (cmd.startsWith("!trigger#")) {
+			if (!Array.isArray(allcmds[cmd])) {console.log("TRIGGER NOT AN ARRAY"); continue;}
+			for (let trig of allcmds[cmd])
+				await probe(trig, "!!trigger");
+		}
+		else await probe(allcmds[cmd], "!" + cmd.split("#")[0]);
+		await sleep(125);
+	}
+}
+probe_all();
+//ghost#artsychickadee
+//hearts#rosuav
+//hypestatus#setn07 (has alias_of), ditto trainstatus#beauation and trainstatus#devicat
+//prayer#citizenprayer
