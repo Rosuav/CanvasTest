@@ -1050,7 +1050,7 @@ function compare_recursive(obj1, obj2, path="") {
 }
 
 async function probe(orig, cmdname) {
-	let msg = orig;
+	let msg = {...orig};
 	//1) Load the message into an element tree
 	const anchor = cmdname === "!!trigger"
 		? {type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"}
@@ -1074,10 +1074,10 @@ async function probe(orig, cmdname) {
 	//3) Canonicalize and compare
 	const canonical = await (await fetch("https://sikorsky.rosuav.com/channels/rosuav/commands", {
 		method: "POST",
-		body: JSON.stringify({msg, cmdname}),
+		body: JSON.stringify({msg: newmsg, cmdname}),
 	})).json();
 	if (compare_recursive(orig, canonical)) console.log("Match!");
-	else {console.log("WAS:", orig); console.log("NOW:", canonical);}
+	else {console.log("WAS:", orig); console.log("RAW:", newmsg); console.log("NOW:", canonical);}
 }
 
 function sleep(delay) {return new Promise(r => setTimeout(r, delay));}
@@ -1089,7 +1089,7 @@ async function probe_all(...cmds) {
 	if (typeof allcmds !== "object") return;
 	//if (!cmds.length) cmds = Object.keys(allcmds).sort(); //CAUTION: May hammer the server
 	for (let cmd of cmds) {
-		if (!allcmds[cmd]) continue;
+		if (!allcmds[cmd] || allcmds[cmd].alias_of) continue;
 		console.log(cmd);
 		if (cmd.startsWith("!trigger#")) {
 			if (!Array.isArray(allcmds[cmd])) {console.log("TRIGGER NOT AN ARRAY"); continue;}
@@ -1100,4 +1100,4 @@ async function probe_all(...cmds) {
 		await sleep(125);
 	}
 }
-probe_all("ghost#artsychickadee", "hearts#rosuav", "hypestatus#setn07", "trainstatus#beauation", "trainstatus#devicat", "prayer#citizenprayer");
+probe_all("love#rosuav", "prayer#citizenprayer");
