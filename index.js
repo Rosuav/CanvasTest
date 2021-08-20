@@ -1018,16 +1018,14 @@ load_favourites();
 //Returns true if objects are congruent.
 function compare_recursive(obj1, obj2, path="") {
 	let same = true;
-	if (typeof obj1 !== typeof obj2) {console.log(path, " - Types differ:", typeof obj1, typeof obj2); same = false;}
+	if (typeof obj1 !== typeof obj2) {console.log(path, " - Types differ:", typeof obj1, typeof obj2); return false;}
 	if (typeof obj1 === "object") {
-		if (Array.isArray(obj1) !== Array.isArray(obj2)) {console.log(path, " - Object/array mismatch"); same = false;}
+		if (Array.isArray(obj1) !== Array.isArray(obj2)) {console.log(path, " - Object/array mismatch"); return false;}
 		if (Array.isArray(obj1)) {
-			if (compare_recursive(obj1.length, obj2.length, path + ".length")) { //Don't check children if lengths differ - it'll likely be noisy
-				for (let i = 0; i < obj1.length; ++i) {
-					if (!compare_recursive(obj1[i], obj2[i], `${path}[${i}]`)) same = false;
-				}
+			if (!compare_recursive(obj1.length, obj2.length, path + ".length")) return false;
+			for (let i = 0; i < obj1.length; ++i) {
+				if (!compare_recursive(obj1[i], obj2[i], `${path}[${i}]`)) same = false;
 			}
-			else same = false;
 		}
 		else {
 			//Is there a better way to get the union of all keys in both objects?
