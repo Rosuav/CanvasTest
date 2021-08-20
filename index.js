@@ -9,13 +9,11 @@ Integration with StilleBot.
 * Save and load, obviously. Pretty straight-forward and the infrastructure is already there.
 * List of available voices and their names
 
-Note that some legacy forms (eg dest="/builtin shoutout %s") are not supported and will not be. If you
-have an old command in this form, edit and save it in the default or raw UIs, then open this one. Other
-than that, though, this should be able to faithfully load and save any command, even if you couldn't
-actually make it directly in this editor. (It may be worth having a tray for the really complicated
-things that most people will never want to look at.)
--- This particular one, with dest/target, might actually be worth handling. There are a lot of old
--- counter commands that still use it.
+Note that some legacy forms are not supported and will not be. If you have an old command in such a
+form, edit and save it in the default or raw UIs, then open this one.
+
+Some particularly hairy types of operations are not available in tools, but can be imported, and
+are then able to be saved into favs. Maybe I'll eventually make a separate tray for them??
 
 An "Element" is anything that can be interacted with. An "Active" is something that can be saved,
 and is everything that isn't in the Favs/Trays/Specials.
@@ -954,6 +952,11 @@ function message_to_element(msg, new_elem, array_ok) {
 			if (array_ok) return msg;
 			return new_elem({type: "group", message: ensure_blank(msg)});
 	}
+	if (msg.dest && msg.dest.includes(" ") && !msg.target) {
+		//Legacy mode: dest is eg "/set varname" and target is unset
+		const words = msg.dest.split(" ");
+		msg.dest = words.shift(); msg.target = words.join(" ");
+	}
 	for (let typename in types) {
 		const type = types[typename];
 		if (!type.fixed && type.params && type.params.every(p => matches(p, msg[p.attr]))) {
@@ -1025,6 +1028,13 @@ function load_favourites() {
 }
 load_favourites();
 
+function destfix(msg) { //Hack: Things compare equal if they match apart from this difference.
+	if (msg.dest && msg.dest.includes(" ") && !msg.target) {
+		//Legacy mode: dest is eg "/set varname" and target is unset
+		const words = msg.dest.split(" ");
+		msg.dest = words.shift(); msg.target = words.join(" ");
+	}
+}
 //Compare two objects for deep equality. Prints all differences to the console.
 //Returns true if objects are congruent.
 function compare_recursive(obj1, obj2, path="") {
@@ -1039,6 +1049,7 @@ function compare_recursive(obj1, obj2, path="") {
 			}
 		}
 		else {
+			destfix(obj1); destfix(obj2);
 			//Is there a better way to get the union of all keys in both objects?
 			const allkeys = [...new Set([...Object.keys(obj1), ...Object.keys(obj2)])];
 			for (let key of allkeys) {
