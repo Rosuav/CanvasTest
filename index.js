@@ -958,7 +958,8 @@ function message_to_element(msg, new_elem, array_ok) {
 			const el = new_elem({type: typename});
 			apply_params(el, msg);
 			if (type.children) for (let attr of type.children) {
-				el[attr] = ensure_blank(arrayify(msg[attr]).map(el => message_to_element(el, new_elem)));
+				if (attr === "message") el[attr] = ensure_blank(arrayify(message_to_element(msg, new_elem, true)));
+				else el[attr] = ensure_blank(arrayify(msg[attr]).map(el => message_to_element(el, new_elem)));
 				el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
 			}
 			return el;
