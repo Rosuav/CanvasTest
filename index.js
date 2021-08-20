@@ -1075,7 +1075,7 @@ function compare_recursive(obj1, obj2, path="") {
 }
 
 let failures = 0;
-async function probe(orig, cmdname) {
+async function probe(orig, cmdname, title) {
 	let msg = JSON.parse(JSON.stringify(orig));
 	//1) Load the message into an element tree
 	const anchor = cmdname === "!!trigger"
@@ -1102,8 +1102,10 @@ async function probe(orig, cmdname) {
 		method: "POST",
 		body: JSON.stringify({msg: newmsg, cmdname}),
 	})).json();
-	if (compare_recursive(orig, canonical)) console.log("Match!");
-	else {console.log("WAS:", orig); console.log("RAW:", newmsg); console.log("NOW:", canonical); ++failures;}
+	if (compare_recursive(orig, canonical)) return;
+	console.log(title);
+	console.log("WAS:", orig); console.log("RAW:", newmsg); console.log("NOW:", canonical);
+	++failures;
 }
 
 function sleep(delay) {return new Promise(r => setTimeout(r, delay));}
@@ -1117,18 +1119,17 @@ async function probe_all(...cmds) {
 	let count = 0;
 	for (let cmd of cmds) {
 		if (!allcmds[cmd] || allcmds[cmd].alias_of) continue;
-		if (cmd < "!trigger") continue; //Hack: Specify a start point
-		console.log(cmd);
+		//if (cmd < "adc") continue; //Hack: Specify a start point
 		if (cmd.startsWith("!trigger#")) {
 			if (!Array.isArray(allcmds[cmd])) {console.log("TRIGGER NOT AN ARRAY"); continue;}
 			for (let trig of allcmds[cmd])
-				await probe(trig, "!!trigger");
+				await probe(trig, "!!trigger", cmd);
 		}
-		else await probe(allcmds[cmd], "!" + cmd.split("#")[0]);
-		if (failures > 25) {console.log("Lots of failures, deal with those before continuing"); break;}
+		else await probe(allcmds[cmd], "!" + cmd.split("#")[0], cmd);
+		if (failures > 25) {console.warn("Lots of failures, deal with those before continuing"); break;}
 		await sleep(125);
 		if (++count === 100) {count = 0; console.log("... rate-limiting..."); await sleep(15000);}
 	}
 }
-//probe_all("prayer#citizenprayer");
-probe_all();
+probe_all("hypetrain#beauation", "transcoding#pixalicious_");
+//probe_all();
