@@ -1014,6 +1014,35 @@ function load_favourites() {
 }
 load_favourites();
 
+//Compare two objects for deep equality. Prints all differences to the console.
+//Returns true if objects are congruent.
+function compare_recursive(obj1, obj2, path="") {
+	let same = true;
+	if (typeof obj1 !== typeof obj2) {console.log(path, " - Types differ:", typeof obj1, typeof obj2); same = false;}
+	if (typeof obj1 === "object") {
+		if (Array.isArray(obj1) !== Array.isArray(obj2)) {console.log(path, " - Object/array mismatch"); same = false;}
+		if (Array.isArray(obj1)) {
+			if (compare_recursive(obj1.length, obj2.length, path + ".length")) { //Don't check children if lengths differ - it'll likely be noisy
+				for (let i = 0; i < obj1.length; ++i) {
+					if (!compare_recursive(obj1[i], obj2[i], `${path}[${i}]`)) same = false;
+				}
+			}
+			else same = false;
+		}
+		else {
+			//Is there a better way to get the union of all keys in both objects?
+			const allkeys = [...new Set([...Object.keys(obj1), ...Object.keys(obj2)])];
+			for (let key of allkeys) {
+				if (!compare_recursive(obj1[key], obj2[key], path + "." + key)) same = false;
+			}
+		}
+	}
+	else {
+		if (obj1 !== obj2) {console.log(path, " - Values differ:", obj1, obj2); same = false;}
+	}
+	return same;
+}
+
 async function probe(orig, cmdname) {
 	let msg = orig;
 	//1) Load the message into an element tree
@@ -1039,10 +1068,7 @@ async function probe(orig, cmdname) {
 		method: "POST",
 		body: JSON.stringify({msg, cmdname: anchor.type === "anchor_trigger" ? "!!trigger" : "!demo"}),
 	})).json();
-	if (JSON.stringify(canonical) !== JSON.stringify(orig)) {
-		console.log("WAS:", orig);
-		console.log("NOW:", canonical);
-	}
+	if (compare_recursive(orig, canonical, true)) console.log("Match!");
 }
 
 probe({
