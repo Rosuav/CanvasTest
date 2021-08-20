@@ -1049,6 +1049,7 @@ function compare_recursive(obj1, obj2, path="") {
 	return same;
 }
 
+let failures = 0;
 async function probe(orig, cmdname) {
 	let msg = {...orig};
 	//1) Load the message into an element tree
@@ -1077,7 +1078,7 @@ async function probe(orig, cmdname) {
 		body: JSON.stringify({msg: newmsg, cmdname}),
 	})).json();
 	if (compare_recursive(orig, canonical)) console.log("Match!");
-	else {console.log("WAS:", orig); console.log("RAW:", newmsg); console.log("NOW:", canonical);}
+	else {console.log("WAS:", orig); console.log("RAW:", newmsg); console.log("NOW:", canonical); ++failures;}
 }
 
 function sleep(delay) {return new Promise(r => setTimeout(r, delay));}
@@ -1087,7 +1088,8 @@ async function probe_all(...cmds) {
 	//reasons - isn't included in this repository.
 	const allcmds = await (await fetch("twitchbot_commands.json")).json();
 	if (typeof allcmds !== "object") return;
-	//if (!cmds.length) cmds = Object.keys(allcmds).sort(); //CAUTION: May hammer the server
+	if (!cmds.length) cmds = Object.keys(allcmds).sort(); //CAUTION: May hammer the server
+	let count = 0;
 	for (let cmd of cmds) {
 		if (!allcmds[cmd] || allcmds[cmd].alias_of) continue;
 		console.log(cmd);
@@ -1097,7 +1099,10 @@ async function probe_all(...cmds) {
 				await probe(trig, "!!trigger");
 		}
 		else await probe(allcmds[cmd], "!" + cmd.split("#")[0]);
+		if (failures > 25) {console.log("Lots of failures, deal with those before continuing"); break;}
 		await sleep(125);
+		if (++count === 100) {count = 0; console.log("... rate-limiting..."); await sleep(15000);}
 	}
 }
-probe_all("love#rosuav", "prayer#citizenprayer");
+//probe_all("prayer#citizenprayer");
+probe_all();
