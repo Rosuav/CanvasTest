@@ -93,6 +93,11 @@ const types = {
 		params: [{attr: "delay", label: "Delay (seconds)", values: [1, 7200, 1]}],
 		typedesc: "Delay message(s) by a certain length of time",
 	},
+	voice: {
+		color: "#bbbb33", children: ["message"], label: el => "Change voice",
+		params: [{attr: "voice", label: "Voice", values: Object.keys(voices_available), selections: voices_available}],
+		typedesc: "Select a different voice for messages - only available if alternate voices are authorized",
+	},
 	builtin_uptime: {
 		color: "#ee77ee", children: ["message"], label: el => "Channel uptime",
 		params: [{attr: "builtin", values: "uptime"}],
@@ -223,11 +228,6 @@ const types = {
 		color: "#ee7777", children: ["message"], label: el => "Randomize",
 		params: [{attr: "mode", label: "Randomize", values: "random"}],
 		typedesc: "Choose one child at random and show it",
-	},
-	voice: {
-		color: "#bbbb33", children: ["message"], label: el => "Change voice",
-		params: [{attr: "voice", label: "Voice", values: Object.keys(voices_available), selections: voices_available}],
-		typedesc: "Select a different voice for messages - only available if alternate voices are authorized",
 	},
 	whisper_back: {
 		color: "#99ffff", width: 400, label: el => "🤫 " + el.message,
