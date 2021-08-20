@@ -223,11 +223,6 @@ const types = {
 		params: [{attr: "cdlength", label: "Delay (seconds)", values: [1, 7200, 1]}, {attr: "cdname", label: "Tag (optional)"}],
 		typedesc: "Prevent the command from being used too quickly. If it's been used recently, the second block happens instead.",
 	},
-	random: {
-		color: "#ee7777", children: ["message"], label: el => "Randomize",
-		params: [{attr: "mode", label: "Randomize", values: "random"}],
-		typedesc: "Choose one child at random and show it",
-	},
 	whisper_back: {
 		color: "#99ffff", width: 400, label: el => "🤫 " + el.message,
 		params: [{attr: "dest", values: "/w"}, {attr: "target", values: "$$"}, {attr: "message", label: "Text"}],
@@ -264,6 +259,11 @@ const types = {
 		color: "#dd7777", children: ["message"], label: el => `Change variable $${el.target}$`,
 		params: [{attr: "dest", values: "/set"}, {attr: "target", label: "Variable name"},],
 		typedesc: "Capture message into a variable. Can be accessed as $varname$ in this or any other command.",
+	},
+	random: {
+		color: "#ee7777", children: ["message"], label: el => "Randomize",
+		params: [{attr: "mode", label: "Randomize", values: "random"}],
+		typedesc: "Choose one child at random and show it",
 	},
 	text: {
 		color: "#77eeee", width: 400, label: el => el.message,
