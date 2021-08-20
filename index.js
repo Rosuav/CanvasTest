@@ -1095,6 +1095,7 @@ async function probe_all(...cmds) {
 	let count = 0;
 	for (let cmd of cmds) {
 		if (!allcmds[cmd] || allcmds[cmd].alias_of) continue;
+		if (cmd < "!trigger") continue; //Hack: Specify a start point
 		console.log(cmd);
 		if (cmd.startsWith("!trigger#")) {
 			if (!Array.isArray(allcmds[cmd])) {console.log("TRIGGER NOT AN ARRAY"); continue;}
