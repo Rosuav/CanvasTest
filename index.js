@@ -1072,7 +1072,7 @@ async function probe(orig, cmdname) {
 	const newmsg = element_to_message(anchor);
 	for (let attr in flags) {
 		const flag = flags[attr][anchor[attr]];
-		if (flag && anchor[attr] !== "") msg[attr] = anchor[attr];
+		if (flag && anchor[attr] !== "") newmsg[attr] = anchor[attr];
 	}
 
 	//3) Canonicalize and compare
