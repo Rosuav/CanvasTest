@@ -933,6 +933,14 @@ function matches(param, val) {
 	}
 }
 
+function apply_params(el, msg) {
+	for (let param of types[el.type].params) {
+		if (typeof param.values !== "string") el[param.attr] = msg[param.attr];
+		//else assert msg[param.attr] === param.values
+		delete msg[param.attr];
+	}
+}
+
 function message_to_element(msg, new_elem, array_ok) {
 	if (msg === "" || typeof msg === "undefined") return "";
 	if (typeof msg === "string") return new_elem({type: "text", message: msg});
@@ -948,10 +956,7 @@ function message_to_element(msg, new_elem, array_ok) {
 		const type = types[typename];
 		if (!type.fixed && type.params && type.params.every(p => matches(p, msg[p.attr]))) {
 			const el = new_elem({type: typename});
-			for (let param of type.params) {
-				el[param.attr] = msg[param.attr];
-				delete msg[type.attr];
-			}
+			apply_params(el, msg);
 			if (type.children) for (let attr of type.children) {
 				el[attr] = ensure_blank(arrayify(msg[attr]).map(el => message_to_element(el, new_elem)));
 				el[attr].forEach((e, i) => typeof e === "object" && (e.parent = [el, attr, i]));
@@ -968,6 +973,7 @@ on("click", "#open_json", async e => {
 	//the desired effect.
 	const anchor = actives[0]; //assert anchor.type =~ "anchor*"
 	const msg = element_to_message(anchor);
+	apply_params(anchor, msg);
 	for (let attr in flags) {
 		const flag = flags[attr][anchor[attr]];
 		if (flag && anchor[attr] !== "") msg[attr] = anchor[attr];
@@ -1049,6 +1055,7 @@ async function probe(orig, cmdname) {
 	const anchor = {type: "anchor_command", x: 10, y: 25, command: "!demo", aliases: "", message: [""]};
 	//const anchor = {type: "anchor_trigger", x: 10, y: 25, message: [""], conditional: "contains", expr1: "", expr2: "%s"};
 	if (typeof msg === "string" || Array.isArray(msg)) msg = {message: msg};
+	apply_params(anchor, msg);
 	for (let attr in flags) {
 		anchor[attr] = msg[attr] || "";
 		delete msg[attr];
