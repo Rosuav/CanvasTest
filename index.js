@@ -249,10 +249,21 @@ const types = {
 			{attr: "target", label: "Variable name"}, {attr: "message", label: "Increment by"}],
 		typedesc: "Update a variable. Can be accessed as $varname$ in this or any other command.",
 	},
+	incr_variable_complex: {
+		color: "#dd7777", children: ["message"], label: el => `Add onto $${el.target}$`,
+		params: [{attr: "dest", values: "/set"}, {attr: "action", values: "add"},
+			{attr: "target", label: "Variable name"},],
+		typedesc: "Capture message as a variable update. Can be accessed as $varname$ in this or any other command.",
+	},
 	set_variable: {
 		color: "#dd7777", label: el => `Set $${el.target}$ to ${el.message}`,
 		params: [{attr: "dest", values: "/set"}, {attr: "target", label: "Variable name"}, {attr: "message", label: "New value"}],
 		typedesc: "Change a variable. Can be accessed as $varname$ in this or any other command.",
+	},
+	set_variable_complex: {
+		color: "#dd7777", children: ["message"], label: el => `Change variable $${el.target}$`,
+		params: [{attr: "dest", values: "/set"}, {attr: "target", label: "Variable name"},],
+		typedesc: "Capture message into a variable. Can be accessed as $varname$ in this or any other command.",
 	},
 	text: {
 		color: "#77eeee", width: 400, label: el => el.message,
